@@ -1,0 +1,19 @@
+version: "3.5"
+services:
+  zabbix-web:
+    build:
+      context: ./build
+    networks:
+       zabbix:
+         aliases:
+            - zabbix-web
+    env_file:
+        - common.env
+    environment: 
+      ZBX_SERVER_HOST: zabbix-1
+    ports:
+        - "80:80" 
+networks:
+  zabbix:
+    external:
+      name: zabbix 
