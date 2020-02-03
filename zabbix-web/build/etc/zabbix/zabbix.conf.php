@@ -24,3 +24,11 @@ $HISTORY['storagetype']='clickhouse';
 $HISTORY['url']   = '{ZBX_CH_URL}';
 $HISTORY['types'] = ['uint', 'dbl','str','text'];
 $HISTORY['dbname'] = '{ZBX_CH_DB}';
+$HISTORY['username'] = '{ZBX_CH_USER}';
+$HISTORY['password'] = '{ZBX_CH_PASS}';
+
+
+
+
+
+

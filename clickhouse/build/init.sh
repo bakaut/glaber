@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e 
 
-clickhouse client --user default --password zabbix -n "SELECT * FROM zabbix.history limit 1;" || \
-clickhouse client --user default --password zabbix -n <<-EOSQL
+clickhouse-client --user default --password zabbix -q "SELECT * FROM zabbix.history limit 1;" || \
+clickhouse-client --user default --password zabbix -n <<-EOSQL
     CREATE DATABASE zabbix;
     CREATE TABLE zabbix.history ( day Date,  
                                     itemid UInt64,  

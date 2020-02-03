@@ -64,10 +64,11 @@ fi
 
 if [[ "$ZBX_USE_CH" != "NO" ]]; then
     sed -i "s/#HistoryStorageType=clickhouse/HistoryStorageType=clickhouse/g" "$ZBX_SERVER_CONF"
-    sed -i "s/#HistoryStorageURL=/HistoryStorageURL=http://$ZBX_CH_SERVER:$ZBX_CH_PORT/g" "$ZBX_SERVER_CONF"
+    sed -i "s/#HistoryStorageURL=http\:\/\/127.0.0.1:8123/HistoryStorageURL=http\:\/\/$ZBX_CH_SERVER:$ZBX_CH_PORT/g" "$ZBX_SERVER_CONF"
     sed -i "s/#HistoryStorageDBName=zabbix/HistoryStorageDBName=$ZBX_CH_DB/g" "$ZBX_SERVER_CONF"
+    sed -i "s/#HistoryStorageTypes=/HistoryStorageTypes=/g" "$ZBX_SERVER_CONF"
 
-    sed -i "s/#ClickHouseUsername=default/ClickHouseUsername=$ZBX_CH_DB/g" "$ZBX_SERVER_CONF"
+    sed -i "s/#ClickHouseUsername=default/ClickHouseUsername=$ZBX_CH_USER/g" "$ZBX_SERVER_CONF"
     sed -i "s/#ClickHousePassword=123456/ClickHousePassword=$ZBX_CH_PASS/g" "$ZBX_SERVER_CONF"
 
     if [[ "$ZBX_CH_DISABLE_NS" != "NO" ]]; then
