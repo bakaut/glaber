@@ -4,6 +4,11 @@
 - Clickhouse. Standalong mode.
 - Mysql. Standalong mode.
 
+Differint from zabbix-server:
+- Async zabbix pollers
+- Clickhouse as history storage
+- Realized native zabbix cluster support
+
 ## Using:
 
 ### Run it
