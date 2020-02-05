@@ -38,7 +38,7 @@ sed -i \
     -e "s/{ZBX_SERVER_NAME}/${ZBX_SERVER_NAME}/g" \
     -e "s/{ZBX_CH_DB}/${ZBX_CH_DB}/g" \
     -e "s/{ZBX_CH_URL}/http\:\/\/${ZBX_CH_SERVER}:${ZBX_CH_PORT}/g" \
-    -e "s/{ZBX_CH_USER}}/${ZBX_CH_USER}/g" \
+    -e "s/{ZBX_CH_USER}/${ZBX_CH_USER}/g" \
     -e "s/{ZBX_CH_PASS}/${ZBX_CH_PASS}/g" \
 "$ZBX_WEB_CONFIG"
 

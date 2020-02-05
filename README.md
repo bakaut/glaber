@@ -1,23 +1,40 @@
-# Dockrized [glaber](https://glaber.io/) version.
+# Dockerized [glaber](https://glaber.io/) version
 
-- Zabbix cluster. 3 zabbix nodes.
+
+## What is it?
+
+### Dockrized [glaber](https://glaber.io/) version.
+
+Using for testing deploynemt of glaber. Glaber is zabbix server fork.
+
+Main differences from zabbix-server:
+- Async zabbix pollers. x100 speed, x10 low CPU and MEMORY
+- Clickhouse as history storage. 
+    - x10 lower system resources for history tables (CPU, MEMORY)
+    - x20 lower disk usage.
+- Native zabbix cluster mode support.
+
+## Components 
+
+- Zabbix cluster. 3 zabbix-server nodes.
 - Clickhouse. Standalong mode.
 - Mysql. Standalong mode.
 
-Differint from zabbix-server:
-- Async zabbix pollers
-- Clickhouse as history storage
-- Realized native zabbix cluster support
-
-## Using:
+## Prerequisite
+- git
+- Docker >=17.12.0 
+- Docker-compose
 
 ### Run it
 ```bash
+git clone git@github.com:bakaut/glaber.git .
 bash run.sh
+#whait for a minute and use
+http://127.0.0.1  Admin,zabbix
 ```
 
-### Use it
-Default credentials:
+### Default credentials
+
 - Zabbix web. http://127.0.0.1. Admin,zabbix
 - Mysql server. Db,User,Pass - zabbix,zabbix,zabbix
 - Clickhouse. Db,User,Pass - zabbix,default,zabbix
