@@ -8,5 +8,6 @@ RUN wget https://glaber.io/repo/key/repo.gpg && \
 RUN DEBIAN_FRONTEND=noninteractive  && apt-get update && \
     apt -y install zabbix-server-mysql zabbix-agent 
 
-FROM mysql:5
+FROM mysql:8
 COPY --from=builder /usr/share/doc/zabbix-server-mysql/create.sql.gz /docker-entrypoint-initdb.d/
+RUN echo 'default_authentication_plugin= mysql_native_password' >> /etc/mysql/conf.d/docker.cnf

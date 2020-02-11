@@ -13,6 +13,7 @@ services:
       ZBX_SERVER_HOST: zabbix-1
     ports:
         - "80:80" 
+
 networks:
   zabbix:
     external:

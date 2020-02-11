@@ -1,0 +1,103 @@
+version: "3.5"
+services:
+  zabbix-mysql:
+    build:
+      context: ./mysql/build
+    env_file:
+        - .env
+    environment:
+      MYSQL_DATABASE: zabbix
+      MYSQL_USER: zabbix
+      MYSQL_PASSWORD: zabbix
+      MYSQL_ROOT_PASSWORD: zabbix
+      MYSQL_ROOT_PASSWORD: zabbix
+    entrypoint: ['docker-entrypoint.sh', '--default-authentication-plugin=mysql_native_password']
+    networks:
+        zabbix:
+            aliases:
+            - mysql-server
+    ports:
+        - "3306:3306" 
+    volumes:
+        - data_mysql:/var/lib/mysql
+
+  clickhouse:
+    build:
+      context: ./clickhouse/build
+    env_file:
+      - .env
+    networks:
+        zabbix:
+            aliases:
+            - ch-server
+    ports:
+        - "8123:8123"
+        - "9000:9000" 
+    volumes:
+        - data_clickhouse:/var/lib/clickhouse
+    ulimits:
+        nproc: 65535
+        nofile:
+            soft: 262144
+            hard: 262144
+  zabbix-web:
+    build:
+      context: ./zabbix-web/build
+    networks:
+        zabbix:
+          aliases:
+            - zabbix-web
+    environment: 
+      ZBX_SERVER_HOST: zabbix-1
+    ports:
+        - "80:80" 
+    env_file:
+      - .env
+  zbx-srv-1:
+    build:
+      context: ./zabbix-cluster/zabbix-server/build
+    environment:
+      ZBX_SERVER_NAME: zabbix-1
+      ZBX_SERVER_ID: 1
+    env_file:
+      - .env
+    ports:
+      - "10051"
+    networks:
+      zabbix:
+        aliases:
+          - zabbix-1
+  zbx-srv-2:
+      build:
+        context: ./zabbix-cluster/zabbix-server/build
+      environment:
+        ZBX_SERVER_NAME: zabbix-2
+        ZBX_SERVER_ID: 2
+      env_file:
+        - .env
+      ports:
+        - "10051"   
+      networks:
+        zabbix:
+          aliases:
+            - zabbix-2
+  zbx-srv-3:
+      build:
+        context: ./zabbix-cluster/zabbix-server/build
+      environment:
+        ZBX_SERVER_NAME: zabbix-3
+        ZBX_SERVER_ID: 3
+      env_file:
+        - .env
+      ports:
+        - "10051"
+      networks:
+        zabbix:
+          aliases:
+            - zabbix-3
+networks:
+  zabbix:
+
+volumes:
+  data_mysql:
+  data_clickhouse:
