@@ -41,6 +41,5 @@ RUN useradd zabbix && \
     chown www-data:www-data /etc/zabbix/web/zabbix.conf.php && \
     sed -i "s/\/run\/php\/php7.3-fpm.pid/\/var\/run\/php7.3-fpm.sock/g" /etc/php/7.3/fpm/php-fpm.conf && \
     chown www-data:www-data -R  /usr/share/zabbix/ && \
-    mkdir /tmp/php7 && chown www-data:www-data -R  /tmp/php7 && \
-    sed -i '264s/)/}/'  /usr/share/zabbix/include/classes/api/services/CHistory.php
+    mkdir /tmp/php7 && chown www-data:www-data -R  /tmp/php7
 ENTRYPOINT ["bash","/usr/bin/docker-entrypoint.sh"]

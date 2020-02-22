@@ -1,0 +1,38 @@
+name: Docker Image CI
+on: [push]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build docker image zabbix-server-glaber and push
+      run: |
+        BASE_IMAGE="$REGISTRY/$GITHUB_REPOSITORY/$PACKAGE"
+        docker login $REGISTRY --username $GITHUB_ACTOR --password ${{ secrets.GITHUB_DOCKER }}
+        docker pull $BASE_IMAGE:$TAG || true
+        cd zabbix-cluster/zabbix-server/build
+        docker build --cache-from $BASE_IMAGE:$TAG . --tag $PACKAGE
+        docker tag $PACKAGE $BASE_IMAGE:$TAG
+        docker push $BASE_IMAGE:$TAG
+      env:
+        REGISTRY: docker.pkg.github.com
+        PACKAGE: zabbix-server-glaber
+        TAG: v1.1.3
+
+    - name: Build docker image zabbix-web-mysql and push
+      run: |
+        BASE_IMAGE="$REGISTRY/$GITHUB_REPOSITORY/$PACKAGE"
+        docker login $REGISTRY --username $GITHUB_ACTOR --password ${{ secrets.GITHUB_DOCKER }}
+        docker pull $BASE_IMAGE:$TAG || true
+        cd zabbix-web/build
+        docker build --cache-from $BASE_IMAGE:$TAG . --tag $PACKAGE
+        docker tag $PACKAGE $BASE_IMAGE:$TAG
+        docker push $BASE_IMAGE:$TAG
+      env:
+        REGISTRY: docker.pkg.github.com
+        PACKAGE: zabbix-web-mysql-glaber
+        TAG: v1.1.3
