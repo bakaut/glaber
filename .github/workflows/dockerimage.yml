@@ -1,5 +1,8 @@
 name: Docker Image CI build docker
-on: [tags]
+on:
+  push:
+    branches:
+      - builder
 
 jobs:
 
