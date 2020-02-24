@@ -4,6 +4,7 @@ set -e
 ZBX_CH_DB=${ZBX_CH_DB:-"zabbix"}
 ZBX_CH_USER=${ZBX_CH_USER:-"default"}
 ZBX_CH_PASS=${ZBX_CH_PASS:-"zabbix"}
+ZBX_CH_RETENTION_DAY=${ZBX_CH_RETENTION:-"30"}
 
 clickhouse-client --user ${ZBX_CH_USER} --password ${ZBX_CH_PASS} -q "SELECT * FROM ${ZBX_CH_DB}.history limit 1;" || \
 clickhouse-client --user ${ZBX_CH_USER} --password ${ZBX_CH_PASS} -n <<-EOSQL
@@ -15,7 +16,7 @@ clickhouse-client --user ${ZBX_CH_USER} --password ${ZBX_CH_PASS} -n <<-EOSQL
       value Int64 Codec(Gorilla, LZ4),  
       value_dbl Float64 Codec(Gorilla, LZ4), 
       value_str LowCardinality(String) Codec(LZ4)
-      ) ENGINE = MergeTree() PARTITION BY toYYYYMMDD(clock) ORDER BY (itemid, clock) SETTINGS index_granularity=8192;
+      ) ENGINE = MergeTree() PARTITION BY toYYYYMMDD(clock) ORDER BY (itemid, clock) TTL clock + INTERVAL  ${ZBX_CH_RETENTION_DAY} DAY [DELETE] SETTINGS index_granularity=8192;
     CREATE TABLE IF NOT EXISTS ${ZBX_CH_DB}.history_buffer (day Date,  
                                     itemid UInt64,  
                                     clock DateTime,  
@@ -33,7 +34,7 @@ clickhouse-client --user ${ZBX_CH_USER} --password ${ZBX_CH_PASS} -n <<-EOSQL
                                     value Int64,  
                                     value_dbl Float64,  
                                     value_str String 
-                                ) ENGINE = MergeTree(day, (itemid, clock), 8192);
+                                ) ENGINE = MergeTree(day, (itemid, clock), 8192) PARTITION BY toYYYYMMDD(clock) TTL clock + INTERVAL ${ZBX_CH_RETENTION_DAY} DAY [DELETE];
     CREATE TABLE IF NOT EXISTS ${ZBX_CH_DB}.history_buffer (day Date,  
                                     itemid UInt64,  
                                     clock DateTime,  

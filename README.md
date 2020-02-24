@@ -24,6 +24,7 @@ Main differences from zabbix-server:
 - git
 - Docker >=17.12.0 
 - Docker-compose
+- Clickhouse image version >=20.1
 
 ### Run it
 ```bash
