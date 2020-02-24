@@ -1,5 +1,5 @@
 name: Docker Image CI build docker
-on: [tag]
+on: [tags]
 
 jobs:
 
