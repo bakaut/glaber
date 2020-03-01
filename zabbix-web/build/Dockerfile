@@ -12,7 +12,7 @@ RUN wget https://glaber.io/repo/key/repo.gpg && \
     echo "deb [arch=amd64] https://repo.utelecom.com.ua/debian $(lsb_release -sc) main" >> /etc/apt/sources.list.d/glaber.list
 RUN echo "deb http://nginx.org/packages/debian `lsb_release -cs` nginx" | tee /etc/apt/sources.list.d/nginx.list && \
     curl -fsSL https://nginx.org/keys/nginx_signing.key | apt-key add -
-RUN apt-get update && apt-get install nginx zabbix-frontend-php=1:${ZBX_BUILD_VERSION}-1+glaber~${GLABER_BUILD_VERSION} \
+RUN apt-get update && apt-get install nginx zabbix-frontend-php=1:$ZBX_BUILD_VERSION-1+glaber~$GLABER_BUILD_VERSION \
                    php7.3-bcmath php7.3-curl php7.3-fpm php7.3-gd \
                    php7.3-json php7.3-ldap php7.3-mbstring php7.3-cgi \
                    php7.3-mysql php7.3-odbc php7.3-opcache  \
