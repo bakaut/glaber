@@ -1,4 +1,6 @@
 FROM debian:buster
+ENV ZBX_BUILD_VERSION=4.2.4
+ENV GLABER_BUILD_VERSION=1.1.3
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install wget curl \
     software-properties-common nmap wget  gnupg2  openssl lsb-release apt-transport-https \

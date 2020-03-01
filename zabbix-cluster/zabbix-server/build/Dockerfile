@@ -1,5 +1,7 @@
 FROM debian:buster
 ENV DEBIAN_FRONTEND=noninteractive
+ENV ZBX_BUILD_VERSION=4.2.4
+ENV GLABER_BUILD_VERSION=1.1.3
 RUN apt-get update && \
     apt-get install nmap wget gnupg2 lsb-release apt-transport-https -y && \
     rm -rf /var/lib/{apt,dpkg,cache,log}/ && \
