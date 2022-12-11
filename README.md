@@ -1,4 +1,4 @@
-# Dockerized [glaber](https://glaber.io/) 2.16.3 version
+# Dockerized [glaber](https://glaber.io/) 2.16.3 version ( Zabbix 5.4.11)
 
 
 ## What is it?
@@ -70,16 +70,9 @@ ZBX_CH_PASS=${ZBX_CH_PASS:-"zabbix"}
 
 zabbix-server
 ```bash
-ZBX_USE_ASYNC_POLLER=${ZBX_CH_PORT:-"NO"}
-ZBX_USE_CH=${ZBX_USE_CH:-"NO"}
-ZBX_USE_NMAP=${ZBX_USE_NMAP:-"NO"}
-ZBX_USE_CH_PRELOAD=${ZBX_USE_CH_PRELOAD:-"NO"}
-ZBX_USE_CH_WARM_UP_CACHE=${ZBX_USE_CH_WARM_UP_CACHE:-"NO"}
-
 
 ZBX_SERVER_CONF=${ZBX_SERVER_CONF:-"/etc/zabbix/zabbix_server.conf"}
 ZBX_SERVER_NAME=${ZBX_SERVER_NAME:-"zabbix-server"}
-ZBX_SERVER_ID=${ZBX_SERVER_ID:-"1"}
 ZBX_SERVER_PORT=${ZBX_SERVER_PORT:-"10051"}
 
 ZBX_MYSQL_HOST=${ZBX_MYSQL_HOST:-"127.0.0.1"}
@@ -93,13 +86,4 @@ ZBX_CH_PORT=${ZBX_CH_PORT:-"8123"}
 ZBX_CH_DB=${ZBX_CH_DB:-"zabbix"}
 ZBX_CH_USER=${ZBX_CH_USER:-"default"}
 ZBX_CH_PASS=${ZBX_CH_PASS:-"zabbix"}
-ZBX_CH_DISABLE_NS=${ZBX_CH_DISABLE_NS:-"NO"}
-
-
-ZBX_ASYNC_SNMP=${ZBX_ASYNC_SNMP:-"5"}
-ZBX_ASYNC_POLLER=${ZBX_ASYNC_SNMP:-"5"}
-
-ZBX_CH_PRELOAD_VALUES=${ZBX_CH_PRELOAD_VALUES:-"8"}
-
-ZBX_WARM_UP_CACHE_SEC=${ZBX_WARM_UP_CACHE_SEC:-"300"}
 ```
