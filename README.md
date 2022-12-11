@@ -1,4 +1,4 @@
-# Dockerized [glaber](https://glaber.io/) version
+# Dockerized [glaber](https://glaber.io/) 2.16.3 version
 
 
 ## What is it?
@@ -30,7 +30,7 @@ Main differences from zabbix-server:
 ```bash
 git clone git@github.com:bakaut/glaber.git .
 bash run.sh
-#whait for a minute and use
+# wait for a 7 minutes (depends on your system perfomance and internet connection speed) and use
 http://127.0.0.1  Admin,zabbix
 ```
 
