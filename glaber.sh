@@ -39,8 +39,9 @@ remotebuild() {
   echo
   if [[ $REPLY =~ ^[Yy]$ ]]
   then
-    git checkout -b build/$(date '+%Y-%m-%d')
-    git push   
+    tag=$(date '+%Y-%m-%d-%H-%M-%S')
+    git checkout -b build/$tag
+    git push --set-upstream origin build/$tag
   fi
 }
 
