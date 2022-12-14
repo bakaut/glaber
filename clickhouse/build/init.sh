@@ -1,9 +1,16 @@
-#!/bin/bash
-set -e 
+#!/usr/bin/env bash
+set -e -x
 
-ZBX_CH_DB=${ZBX_CH_DB:-"glaber"}
-ZBX_CH_USER=${ZBX_CH_USER:-"default"}
-ZBX_CH_PASS=${ZBX_CH_PASS:-"zabbix"}
+# Script trace mode
+if [ "${DEBUG_MODE}" == "true" ]; then
+    set -o xtrace
+fi
+
+sed -i -e "s/glaber/${ZBX_CH_DB:-"glaber"}/g" \
+       -e "s/6 MONTH/${ZBX_CH_RETENTION:-"30 DAY"}/g" \
+       /root/history.sql
+
+sed -i "s/>zabbix</>${ZBX_CH_PASS:-"zabbix"}</g" /etc/clickhouse-server/users.xml
 
 if [ ! -f exist.database ]; then
   clickhouse-client \

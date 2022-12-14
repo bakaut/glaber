@@ -1,6 +1,4 @@
-FROM debian:buster
-ENV ZBX_BUILD_VERSION=4.0.4
-ENV GLABER_BUILD_VERSION=2.16.3
+FROM debian:bullseye
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get install -y wget software-properties-common \
@@ -14,12 +12,12 @@ RUN apt-get update && \
     echo "deb [arch=amd64] http://nginx.org/packages/debian $(lsb_release -sc) nginx" >> /etc/apt/sources.list.d/nginx.list && \
     apt-get update && \
     apt-get install -y glaber-nginx-conf=1:$GLABER_BUILD_VERSION* \                    
-            zabbix-agent=1:$ZBX_BUILD_VERSION* \
+            zabbix-agent supervisor default-mysql-client \
             php7.4-bcmath php7.4-curl php7.4-fpm php7.4-gd \
             php7.4-json php7.4-ldap php7.4-mbstring php7.4-cgi \
             php7.4-mysql php7.4-odbc php7.4-opcache  \
             php7.4-snmp php7.4-soap php7.4-xml php7.4-xmlrpc \
-            php7.4-xsl php7.4 supervisor default-mysql-client && \
+            php7.4-xsl php7.4  && \
     rm -rf /var/lib/{apt,dpkg,cache,log}/ && \
     apt-get autoremove --yes && \
     apt-get clean autoclean

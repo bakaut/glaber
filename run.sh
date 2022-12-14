@@ -1,2 +1,4 @@
+docker-compose down
 docker-compose build
-docker-compose up -d
+docker volume rm glaber-docker_data_clickhouse  glaber-docker_data_mysql    
+docker-compose up
