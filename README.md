@@ -29,7 +29,14 @@ Main differences from zabbix-server:
 ### Run it
 ```bash
 git clone git@github.com:bakaut/glaber.git .
-bash run.sh
+./glaber.sh 
+Usage: ./glaber.sh <action>
+
+./glaber.sh build - Build docker images
+./glaber.sh start - Build docker images and start glaber
+./glaber.sh rerun - Completely remove glaber and start it again
+./glaber.sh prune - Completely remove glaber installation
+./glaber.sh remotebuild - Remote rebuild github glaber images (only admins)
 # wait for a 7 minutes (depends on your system perfomance and internet connection speed) and use
 http://127.0.0.1  Admin,zabbix
 ```
