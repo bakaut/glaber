@@ -31,7 +31,7 @@
     <!-- Users and ACL. -->
     <users>
         <!-- If user name was not specified, 'default' user is used. -->
-        <default>
+        <defaultuser>
             <!-- Password could be specified in plaintext or in SHA256 (in hex format).
 
                  If you want to specify password in plaintext (not recommended), place it in 'password' element.
@@ -53,7 +53,7 @@
                  Execute: PASSWORD=$(base64 < /dev/urandom | head -c8); echo "$PASSWORD"; echo -n "$PASSWORD" | openssl dgst -sha1 -binary | openssl dgst -sha1
                  In first line will be password and in second - corresponding double SHA1.
             -->
-            <password>zabbix</password>
+            <password>zabbixpassword</password>
 
             <!-- List of networks with open access.
 
@@ -84,7 +84,7 @@
 
             <!-- Quota for user. -->
             <quota>default</quota>
-        </default>
+        </defaultuser>
     </users>
 
     <!-- Quotas. -->
