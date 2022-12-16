@@ -3,16 +3,16 @@
 global $DB, $HISTORY;
 
 $DB['TYPE']     = 'MYSQL';
-$DB['SERVER']   = '{ZBX_MYSQL_HOST}';
-$DB['PORT']     = '{ZBX_MYSQL_PORT}';
-$DB['DATABASE'] = '{ZBX_MYSQL_DB}';
-$DB['USER']     = '{ZBX_MYSQL_USER}';
-$DB['PASSWORD'] = '{ZBX_MYSQL_PASS}';
+$DB['SERVER']   = '{MYSQL_HOST}';
+$DB['PORT']     = '{MYSQL_PORT}';
+$DB['DATABASE'] = '{MYSQL_DATABASE}';
+$DB['USER']     = '{MYSQL_USER}';
+$DB['PASSWORD'] = '{MYSQL_PASSWORD}';
 
 // Schema name. Used for IBM DB2 and PostgreSQL.
 //$DB['SCHEMA'] = '{DB_SERVER_SCHEMA}';
 
-$ZBX_SERVER      = '{ZBX_SERVER_HOST}';
+$ZBX_SERVER      = '{ZBX_SERVER_NAME}';
 $ZBX_SERVER_PORT = '{ZBX_SERVER_PORT}';
 $ZBX_SERVER_NAME = '{ZBX_SERVER_NAME}';
 

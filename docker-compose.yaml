@@ -1,0 +1,62 @@
+version: "3.5"
+services:
+  zabbix-mysql:
+    build:
+      context: ./mysql/build
+    env_file:
+    - .env
+    networks:
+      zabbix:
+        aliases:
+        - mysql-server
+    ports:
+    - "3306:3306" 
+    volumes:
+    - data_mysql:/var/lib/mysql
+  clickhouse:
+    build:
+      context: ./clickhouse/build
+    env_file:
+    - .env
+    networks:
+      zabbix:
+        aliases:
+        - ch-server
+    ports:
+    - "8123"
+    - "9000" 
+    volumes:
+    - data_clickhouse:/var/lib/clickhouse
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 262144
+        hard: 262144
+  zabbix-web:
+    build:
+      context: ./zabbix-web/build
+    networks:
+      zabbix:
+        aliases:
+        - zabbix-web
+    ports:
+    - "8050:80" 
+    env_file:
+    - .env
+  zbx-srv-1:
+    build:
+      context: ./zabbix-cluster/zabbix-server/build
+    env_file:
+    - .env
+    ports:
+    - "10051"
+    networks:
+      zabbix:
+        aliases:
+        - zabbix-1
+networks:
+  zabbix:
+
+volumes:
+  data_mysql:
+  data_clickhouse:
