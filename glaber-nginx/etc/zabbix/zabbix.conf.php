@@ -20,7 +20,7 @@ $IMAGE_FORMAT_DEFAULT	= IMAGE_FORMAT_PNG;
 
 // Clickhouse url (can be string if same url is used for all types).
 
-$HISTORY['storagetype']='clickhouse';
+$HISTORY['storagetype']='{ZBX_HISTORY_MODULE}';
 $HISTORY['url']   = '{ZBX_CH_URL}';
 $HISTORY['types'] = ['uint', 'dbl','str','text'];
 $HISTORY['dbname'] = '{ZBX_CH_DB}';

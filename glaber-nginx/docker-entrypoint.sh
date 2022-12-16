@@ -14,6 +14,7 @@ sed -i \
     -e "s/{ZBX_CH_URL}/http\:\/\/${ZBX_CH_SERVER}:${ZBX_CH_PORT}/g" \
     -e "s/{ZBX_CH_USER}/${ZBX_CH_USER}/g" \
     -e "s/{ZBX_CH_PASS}/${ZBX_CH_PASS}/g" \
+    -e "s/{ZBX_HISTORY_MODULE}/${ZBX_HISTORY_MODULE}/g" \
 "$ZBX_WEB_CONFIG"
 
 /usr/bin/supervisord -c /etc/supervisor/supervisord.conf

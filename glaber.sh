@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-set -e
+set -e 
+
+export args=" --build-arg GLABER_BUILD_VERSION=$(cat glaber.version)"
 
 usage() {
   echo "Usage: $0 <action>"
@@ -18,16 +20,16 @@ command -v docker-compose >/dev/null 2>&1 || \
 { echo >&2 "docker-compose is required, please install it and start over. Aborting."; exit 1; }
 
 build() {
-  docker-compose build
+  docker-compose build $args
 }
 start() {
-  docker-compose build
+  docker-compose build $args
   docker-compose up -d
 }
 rerun() {
   docker-compose down
   docker volume rm glaber-docker_data_clickhouse  glaber-docker_data_mysql
-  docker-compose build
+  docker-compose build $args
   docker-compose up -d
 }
 prune() {
