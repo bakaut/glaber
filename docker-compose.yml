@@ -32,20 +32,20 @@ services:
       nofile:
         soft: 262144
         hard: 262144
-  zabbix-web:
+  glaber-nginx:
     build:
-      context: ./zabbix-web/build
+      context: ./glaber-nginx
     networks:
       zabbix:
         aliases:
-        - zabbix-web
+        - glaber-nginx
     ports:
     - "8050:80" 
     env_file:
     - .env
-  zbx-srv-1:
+  glaber-server:
     build:
-      context: ./zabbix-cluster/zabbix-server/build
+      context: ./glaber-server
     env_file:
     - .env
     ports:
@@ -53,7 +53,7 @@ services:
     networks:
       zabbix:
         aliases:
-        - zabbix-1
+        - glaber-server-1
 networks:
   zabbix:
 
