@@ -28,13 +28,13 @@ start() {
 }
 rerun() {
   docker-compose down
-  docker volume rm glaber-docker_data_clickhouse  glaber-docker_data_mysql
+  docker volume rm glaber-docker_data_clickhouse  glaber-docker_data_mysql || true
   docker-compose build $args
   docker-compose up -d
 }
 prune() {
   docker-compose down
-  docker volume rm glaber-docker_data_clickhouse  glaber-docker_data_mysql
+  docker volume rm glaber-docker_data_clickhouse  glaber-docker_data_mysql || true
 }
 remotebuild() {
   read -p "Are you sure than you are this repo admin [y/n] ? " -n 1 -r

@@ -2,6 +2,7 @@
 
 set -eo pipefail
 
+# change zabbix web config
 sed -i \
     -e "s/{MYSQL_HOST}/${MYSQL_HOST}/g" \
     -e "s/{MYSQL_PORT}/${MYSQL_PORT}/g" \
@@ -16,5 +17,10 @@ sed -i \
     -e "s/{ZBX_CH_PASS}/${ZBX_CH_PASS}/g" \
     -e "s/{ZBX_HISTORY_MODULE}/${ZBX_HISTORY_MODULE}/g" \
 "$ZBX_WEB_CONFIG"
+
+# set default time zone for php-fpm
+# sed -i "s/{MYSQL_HOST}/${MYSQL_HOST}/g" \
+# sed ; php_value[date.timezone] = Europe/Riga
+# ; php_value[date.timezone] = Europe/Moscow /etc/php/7.4/fpm/pool.d/zabbix-php-fpm.conf
 
 /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
