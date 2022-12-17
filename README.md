@@ -1,32 +1,35 @@
-# Dockerized [glaber](https://glaber.io/) 2.16.3 version ( Zabbix 5.4.11)
+# Dockerized [glaber](https://glaber.io/)
 
+Glaber is zabbix server fork.
 
-## What is it?
+Versions:
+- glaber     - 2.16.9
+- zabbix     - 5.4.11
+- mysql      - percona:8.0.29-21-centos
+- clickhouse - clickhouse-server:21.3.20
 
-### Dockrized [glaber](https://glaber.io/) version.
-
-Using for testing deploynemt of glaber. Glaber is zabbix server fork.
+Used for testing deployment of glaber. 
 
 Main differences from zabbix-server:
 - Async zabbix pollers. x100 speed, x10 low CPU and MEMORY
-- Clickhouse as history storage. 
+- Clickhouse as history storage backend. 
     - x10 lower system resources for history tables (CPU, MEMORY)
     - x20 lower disk usage.
-- Native zabbix cluster mode support.
 
 ## Components 
 
-- Zabbix cluster. 3 zabbix-server nodes.
-- Clickhouse. Standalong mode.
-- Mysql. Standalong mode.
+- glaber server
+- glaber nginx
+- clickhouse as history storage backend
+- mysql as main database backend
 
-## Prerequisite
+## Prerequirements
 - git
 - Docker >=17.12.0 
 - Docker-compose
 - Clickhouse image version >=20.1
 
-### Run it
+### Using
 ```bash
 git clone git@github.com:bakaut/glaber.git .
 ./glaber.sh 
@@ -37,7 +40,7 @@ Usage: ./glaber.sh <action>
 ./glaber.sh rerun - Completely remove glaber and start it again
 ./glaber.sh prune - Completely remove glaber installation
 ./glaber.sh remotebuild - Remote rebuild github glaber images (only admins)
-# wait for a 7 minutes (depends on your system perfomance and internet connection speed) and use
+# wait for a 7 minutes (depends on your system perfomance and internet connection speed) and use it
 http://127.0.0.1  Admin,zabbix
 ```
 
@@ -45,52 +48,8 @@ http://127.0.0.1  Admin,zabbix
 
 - Zabbix web. http://127.0.0.1. Admin,zabbix
 - Mysql server. Db,User,Pass - zabbix,zabbix,zabbix
-- Clickhouse. Db,User,Pass - zabbix,default,zabbix
-
-
-### Cleanup
-```bash
-bash remove.sh
-```
+- Clickhouse. Db,User,Pass - zabbix,defaultuser,zabbixpassword
 
 ## Default ENV variables
 
-zabbix-web
-
-```bash
-ZBX_SERVER_NAME=${ZBX_SERVER_NAME:-"Glaber server"}
-ZBX_SERVER_PORT=${ZBX_SERVER_PORT:-"10051"}
-ZBX_SERVER_NAME=${ZBX_SERVER_NAME:-"zabbix"}
-
-MYSQL_HOST=${MYSQL_HOST:-"127.0.0.1"}
-MYSQL_DATABASE=${MYSQL_DATABASE:-"zabbix"}
-MYSQL_USER=${MYSQL_USER:-"zabbix"}
-MYSQL_PASSWORD=${MYSQL_PASSWORD:-"zabbix"}
-MYSQL_PORT=${MYSQL_PORT:-"3306"}
-
-ZBX_CH_SERVER=${ZBX_CH_SERVER:-"127.0.0.1"}
-ZBX_CH_PORT=${ZBX_CH_PORT:-"8123"}
-ZBX_CH_DB=${ZBX_CH_DB:-"zabbix"}
-ZBX_CH_USER=${ZBX_CH_USER:-"default"}
-ZBX_CH_PASS=${ZBX_CH_PASS:-"zabbix"}
-```
-
-zabbix-server
-```bash
-
-ZBX_SERVER_CONF=${ZBX_SERVER_CONF:-"/etc/zabbix/zabbix_server.conf"}
-ZBX_SERVER_NAME=${ZBX_SERVER_NAME:-"zabbix-server"}
-ZBX_SERVER_PORT=${ZBX_SERVER_PORT:-"10051"}
-
-MYSQL_HOST=${MYSQL_HOST:-"127.0.0.1"}
-MYSQL_DATABASE=${MYSQL_DATABASE:-"zabbix"}
-MYSQL_USER=${MYSQL_USER:-"zabbix"}
-MYSQL_PASSWORD=${MYSQL_PASSWORD:-"zabbix"}
-MYSQL_PORT=${MYSQL_PORT:-"3306"}
-
-ZBX_CH_SERVER=${ZBX_CH_SERVER:-"127.0.0.1"}
-ZBX_CH_PORT=${ZBX_CH_PORT:-"8123"}
-ZBX_CH_DB=${ZBX_CH_DB:-"zabbix"}
-ZBX_CH_USER=${ZBX_CH_USER:-"default"}
-ZBX_CH_PASS=${ZBX_CH_PASS:-"zabbix"}
-```
+See `.env` file
