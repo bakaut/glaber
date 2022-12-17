@@ -1,13 +1,12 @@
-FROM debian:buster
+FROM debian:bullseye
 ENV DEBIAN_FRONTEND=noninteractive
-ENV ZBX_BUILD_VERSION=4.0.4
-ENV GLABER_BUILD_VERSION=2.16.3
+ARG GLABER_BUILD_VERSION
 RUN apt-get update && \
     apt-get install -y nmap wget gnupg2 lsb-release apt-transport-https && \
     wget -qO - https://glaber.io/repo/key/repo.gpg | apt-key add - && \
     echo "deb [arch=amd64] https://glaber.io/repo/debian $(lsb_release -sc) main" >> /etc/apt/sources.list.d/glaber.list && \
     apt-get update && \
-    apt-get install -y glaber-server-mysql=1:$GLABER_BUILD_VERSION* zabbix-agent=1:$ZBX_BUILD_VERSION* && \
+    apt-get install -y glaber-server-mysql=1:$GLABER_BUILD_VERSION* && \
     rm -rf /var/lib/{apt,dpkg,cache,log}/ && \
     apt-get autoremove --yes && \
     apt-get clean autoclean
