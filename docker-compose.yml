@@ -1,8 +1,8 @@
 version: "3.5"
 services:
-  zabbix-mysql:
+  mysql:
     build:
-      context: ./mysql/build
+      context: ./mysql
     env_file:
     - .env
     networks:
@@ -15,7 +15,7 @@ services:
     - data_mysql:/var/lib/mysql
   clickhouse:
     build:
-      context: ./clickhouse/build
+      context: ./clickhouse
     env_file:
     - .env
     networks:
@@ -40,7 +40,7 @@ services:
         aliases:
         - glaber-nginx
     ports:
-    - "8050:80" 
+    - "80:80" 
     env_file:
     - .env
   glaber-server:
@@ -56,7 +56,6 @@ services:
         - glaber-server-1
 networks:
   zabbix:
-
 volumes:
   data_mysql:
   data_clickhouse:
