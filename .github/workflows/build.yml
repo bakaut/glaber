@@ -14,7 +14,7 @@ jobs:
         GLABER_BUILD_VERSION=$(cat glaber.version)
         GLABER_SERVER_LATEST=$BASE_IMAGE:latest
         GLABER_SERVER_VERSION=$BASE_IMAGE:$GLABER_BUILD_VERSION
-        docker login $REGISTRY --username $GITHUB_ACTOR --password ${{ secrets.GITHUB_DOCKER }}
+        docker login $REGISTRY --username $GITHUB_ACTOR --password ${{ secrets.GITHUB_TOKEN }}
         cd glaber-server
         docker build . -t $GLABER_SERVER_LATEST
         docker tag $GLABER_SERVER_LATEST $GLABER_SERVER_VERSION
@@ -30,7 +30,7 @@ jobs:
         GLABER_BUILD_VERSION=$(cat glaber.version)
         GLABER_NGINX_LATEST=$BASE_IMAGE:latest
         GLABER_NGINX_VERSION=$BASE_IMAGE:$GLABER_BUILD_VERSION
-        docker login $REGISTRY --username $GITHUB_ACTOR --password ${{ secrets.GITHUB_DOCKER }}
+        docker login $REGISTRY --username $GITHUB_ACTOR --password ${{ secrets.GITHUB_TOKEN }}
         cd glaber-nginx
         docker build . -t $GLABER_NGINX_LATEST
         docker tag $GLABER_NGINX_LATEST $GLABER_NGINX_VERSION
