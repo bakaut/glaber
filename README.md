@@ -25,9 +25,10 @@ Main differences from zabbix-server:
 
 ## Prerequirements
 - git
-- Docker >=17.12.0 
-- Docker-compose
-- Clickhouse image version >=20.1
+- docker >=17.12.0 
+- docker-compose
+- clickhouse version >=20.1
+- php and php-fpm version in glaber nginx >=7.2 and <8
 
 ### Using
 ```bash
