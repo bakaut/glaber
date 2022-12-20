@@ -17,7 +17,10 @@ RUN apt-get update && \
 COPY etc /etc/
 RUN mkdir /run/php && chown www-data:www-data /run/php && \ 
     chown www-data:www-data /etc/zabbix/web/zabbix.conf.php && \
-    mv /etc/docker-entrypoint.sh /usr/bin
+    mv /etc/docker-entrypoint.sh /usr/bin && \
+    sed -i -e "s/#        listen          80;/    listen          80;/g" \
+           -e "s/#        server_name     example.com;/    server_name     _;/g" \
+    /etc/nginx/conf.d/zabbix.conf
 VOLUME ["/etc/ssl/nginx"]
 WORKDIR /usr/share/zabbix
 EXPOSE 80/TCP 
