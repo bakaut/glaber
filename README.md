@@ -48,8 +48,8 @@ http://127.0.0.1  Admin,zabbix
 ### Default credentials
 
 - Zabbix web. http://127.0.0.1. Admin,zabbix
-- Mysql server. Db,User,Pass - zabbix,zabbix,zabbix
-- Clickhouse. Db,User,Pass - zabbix,defaultuser,zabbixpassword
+- Mysql server. Db,User,Pass - zabbix,zabbix,`<random generated>`
+- Clickhouse. Db,User,Pass - zabbix,defaultuser,`<random generated>`
 
 ## Default ENV variables
 
