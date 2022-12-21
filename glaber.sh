@@ -3,16 +3,16 @@ set -e
 
 export args=" --build-arg GLABER_BUILD_VERSION=$(cat glaber.version)"
 
-get-password() {
+gen-password() {
  base64 < /dev/urandom | head -c12 | tr -d \\ |  tr -d \/
 }
 
 set-password() {
   if [ ! -f /tmp/passwords.changed ]; then
-    ZBX_CH_PASS=$(get-password)
-    sed -i -e "s/MYSQL_PASSWORD.*/MYSQL_PASSWORD=$(get-password)/" \
+    ZBX_CH_PASS=$(gen-password)
+    sed -i -e "s/MYSQL_PASSWORD.*/MYSQL_PASSWORD=$(gen-password)/" \
            -e "s/ZBX_CH_PASS.*/ZBX_CH_PASS=$ZBX_CH_PASS/" \
-           -e "s/MYSQL_ROOT_PASSWORD.*/MYSQL_ROOT_PASSWORD=$(get-password)/" \
+           -e "s/MYSQL_ROOT_PASSWORD.*/MYSQL_ROOT_PASSWORD=$(gen-password)/" \
     .env
     sed -i "s/></>$ZBX_CH_PASS</" clickhouse/users.xml
     touch /tmp/passwords.changed
