@@ -3,6 +3,23 @@ set -e
 
 export args=" --build-arg GLABER_BUILD_VERSION=$(cat glaber.version)"
 
+get-password() {
+ base64 < /dev/urandom | head -c12 | tr -d \\ |  tr -d \/
+}
+
+set-password() {
+  if [ ! -f /tmp/passwords.changed ]; then
+    ZBX_CH_PASS=$(get-password)
+    sed -i -e "s/MYSQL_PASSWORD.*/MYSQL_PASSWORD=$(get-password)/" \
+           -e "s/ZBX_CH_PASS.*/ZBX_CH_PASS=$ZBX_CH_PASS/" \
+           -e "s/MYSQL_ROOT_PASSWORD.*/MYSQL_ROOT_PASSWORD=$(get-password)/" \
+    .env
+    sed -i "s/></>$ZBX_CH_PASS</" clickhouse/users.xml
+    touch /tmp/passwords.changed
+  fi
+}
+
+
 usage() {
   echo "Usage: $0 <action>"
   echo
@@ -20,6 +37,7 @@ command -v docker-compose >/dev/null 2>&1 || \
 { echo >&2 "docker-compose is required, please install it and start over. Aborting."; exit 1; }
 
 build() {
+  set-password
   docker-compose build $args
 }
 start() {
@@ -49,19 +67,15 @@ remotebuild() {
 
 case $1 in
   build)
-    echo -n "Build docker images and start glaber"
     build
     ;;
   start)
-    echo -n "Build docker images and start glaber"
     start
     ;;
   rerun)
-    echo -n "Completely remove glaber and start it again"
     rerun
     ;;
   prune)
-    echo -n "Completely remove glaber installation"
     prune
     ;;
   remotebuild)
