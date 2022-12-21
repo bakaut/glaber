@@ -3,11 +3,10 @@ set -e
 
 export args=" --build-arg GLABER_BUILD_VERSION=$(cat glaber.version)"
 
-gen-password() {
- base64 < /dev/urandom | head -c12 | tr -d \\ |  tr -d \/
-}
-
 set-password() {
+  gen-password() {
+    base64 < /dev/urandom | head -c12 | tr -d \\ |  tr -d \/
+  }
   if [ ! -f /tmp/passwords.changed ]; then
     ZBX_CH_PASS=$(gen-password)
     sed -i -e "s/MYSQL_PASSWORD.*/MYSQL_PASSWORD=$(gen-password)/" \
