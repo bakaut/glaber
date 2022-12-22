@@ -36,20 +36,21 @@ git clone git@github.com:bakaut/glaber.git .
 ./glaber.sh 
 Usage: ./glaber.sh <action>
 
-./glaber.sh build - Build docker images
-./glaber.sh start - Build docker images and start glaber
-./glaber.sh rerun - Completely remove glaber and start it again
-./glaber.sh prune - Completely remove glaber installation
-./glaber.sh remotebuild - Remote rebuild github glaber images (only admins)
+./glaber.sh build    - Build docker images
+./glaber.sh start    - Build docker images and start glaber
+./glaber.sh stop     - Stop glaber containers
+./glaber.sh recreate - Completely remove glaber and start it again
+./glaber.sh remove   - Completely remove glaber installation
+./glaber.sh remote   - Remote rebuild github glaber images (only admins)
 # wait for a 7 minutes (depends on your system perfomance and internet connection speed) and use it
 http://127.0.0.1  Admin,`<random generated password>`
 ```
 
 ### Default credentials
 
-- Zabbix web. http://127.0.0.1. Admin,zabbix,`<random generated>`
-- Mysql server. Db,User,Pass - zabbix,zabbix,`<random generated>`
-- Clickhouse. Db,User,Pass - zabbix,defaultuser,`<random generated>`
+- Zabbix web. http://127.0.0.1 - Admin,`<random generated>`
+- Mysql server. Db,User,Pass   - zabbix,zabbix,`<random generated>`
+- Clickhouse. Db,User,Pass     - zabbix,defaultuser,`<random generated>`
 
 ### After success  build:
 - Zabbix web Admin password located in `.zbxweb` and displayed to stdout
