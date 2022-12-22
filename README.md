@@ -42,15 +42,18 @@ Usage: ./glaber.sh <action>
 ./glaber.sh prune - Completely remove glaber installation
 ./glaber.sh remotebuild - Remote rebuild github glaber images (only admins)
 # wait for a 7 minutes (depends on your system perfomance and internet connection speed) and use it
-http://127.0.0.1  Admin,zabbix
+http://127.0.0.1  Admin,`<random generated password>`
 ```
 
 ### Default credentials
 
-- Zabbix web. http://127.0.0.1. Admin,zabbix
-- Mysql server. Db,User,Pass - zabbix,zabbix,zabbix
-- Clickhouse. Db,User,Pass - zabbix,defaultuser,zabbixpassword
+- Zabbix web. http://127.0.0.1. Admin,zabbix,`<random generated>`
+- Mysql server. Db,User,Pass - zabbix,zabbix,`<random generated>`
+- Clickhouse. Db,User,Pass - zabbix,defaultuser,`<random generated>`
 
+### After success  build:
+- Zabbix web Admin password located in `.zbxweb` and displayed to stdout
+- All passwords variables updated in `.env` file
 ## Default ENV variables
 
 See `.env` file

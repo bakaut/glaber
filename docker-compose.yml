@@ -10,7 +10,7 @@ services:
         aliases:
         - mysql-server
     ports:
-    - "3306:3306" 
+    - "3306" 
     volumes:
     - data_mysql:/var/lib/mysql
   clickhouse:
