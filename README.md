@@ -47,7 +47,7 @@ http://127.0.0.1  Admin,zabbix
 
 ### Default credentials
 
-- Zabbix web. http://127.0.0.1. Admin,zabbix
+- Zabbix web. http://127.0.0.1. Admin,zabbix,`<random generated>`
 - Mysql server. Db,User,Pass - zabbix,zabbix,`<random generated>`
 - Clickhouse. Db,User,Pass - zabbix,defaultuser,`<random generated>`
 

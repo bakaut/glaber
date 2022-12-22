@@ -1,20 +1,34 @@
 #!/usr/bin/env bash
-set -e 
+set -e
 
 export args=" --build-arg GLABER_BUILD_VERSION=$(cat glaber.version)"
 
-set-password() {
+set-passwords() {
   gen-password() {
-    base64 < /dev/urandom | head -c12 | tr -d \\ |  tr -d \/
+    < /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c12
   }
-  if [ ! -f /tmp/passwords.changed ]; then
+  make-bcrypt-hash() {
+    htpasswd -bnBC 8 "" $1 | grep -oP '\$2[ayb]\$.{56}' | tail -c 54
+  }
+  if [ ! -f /tmp/files.changed ]; then
     ZBX_CH_PASS=$(gen-password)
-    sed -i -e "s/MYSQL_PASSWORD.*/MYSQL_PASSWORD=$(gen-password)/" \
-           -e "s/ZBX_CH_PASS.*/ZBX_CH_PASS=$ZBX_CH_PASS/" \
-           -e "s/MYSQL_ROOT_PASSWORD.*/MYSQL_ROOT_PASSWORD=$(gen-password)/" \
+    sed -i -e "s/MYSQL_PASSWORD=.*/MYSQL_PASSWORD=$(gen-password)/" \
+           -e "s/ZBX_CH_PASS=.*/ZBX_CH_PASS=$ZBX_CH_PASS/" \
+           -e "s/MYSQL_ROOT_PASSWORD=.*/MYSQL_ROOT_PASSWORD=$(gen-password)/" \
     .env
-    sed -i "s/></>$ZBX_CH_PASS</" clickhouse/users.xml
-    touch /tmp/passwords.changed
+    ZBX_WEB_ADMIN_PASS=$(gen-password)
+    ZBX_WEB_ADMIN_PASS_HASH=$(make-bcrypt-hash $ZBX_WEB_ADMIN_PASS)
+    ZBX_WEB_GUEST_PASS=$(gen-password)
+    ZBX_WEB_ADMIN_GUEST_HASH=$(make-bcrypt-hash $ZBX_WEB_GUEST_PASS)
+    echo "Zabbix web access http://127.0.1.1 Admin $ZBX_WEB_ADMIN_PASS" > .zbxweb
+    sed -i -e "s#admin-pass-hash#$ZBX_WEB_ADMIN_PASS_HASH#" \
+           -e "s#guest-pass-hash#$ZBX_WEB_ADMIN_GUEST_HASH#" \
+    mysql/data.sql
+    source .env
+    sed -i -e "s/<password>.*<\/password>/<password>$ZBX_CH_PASS<\/password>/" \
+           -e "s/defaultuser/$ZBX_CH_USER/" \
+    clickhouse/users.xml
+    touch /tmp/files.changed
   fi
 }
 
@@ -35,23 +49,30 @@ usage() {
 command -v docker-compose >/dev/null 2>&1 || \
 { echo >&2 "docker-compose is required, please install it and start over. Aborting."; exit 1; }
 
+# Check whether htpasswd is installed
+command -v htpasswd >/dev/null 2>&1 || \
+{ echo >&2 "htpasswd is required(apache2-utils), please install it and start over. Aborting."; exit 1; }
+
 build() {
-  set-password
-  docker-compose build $args
+  docker-compose build $args 1>/dev/null || echo "docker images build failed"
 }
 start() {
-  docker-compose build $args
+  docker-compose build $args 1>/dev/null || echo "docker images build failed"
   docker-compose up -d
+  cat .zbxweb
 }
 rerun() {
   docker-compose down
   docker volume rm glaber-docker_data_clickhouse  glaber-docker_data_mysql || true
-  docker-compose build $args
+  rm /tmp/files.changed
+  docker-compose build $args 1>/dev/null
   docker-compose up -d
+  cat .zbxweb
 }
 prune() {
   docker-compose down
   docker volume rm glaber-docker_data_clickhouse  glaber-docker_data_mysql || true
+  rm /tmp/files.changed
 }
 remotebuild() {
   read -p "Are you sure than you are this repo admin [y/n] ? " -n 1 -r
@@ -63,6 +84,8 @@ remotebuild() {
     git push --set-upstream origin build/$tag
   fi
 }
+
+set-passwords
 
 case $1 in
   build)
