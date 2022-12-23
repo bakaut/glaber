@@ -24,11 +24,11 @@ Main differences from zabbix-server:
 - mysql as main database backend
 
 ## Prerequirements
-- git
 - docker >=17.12.0 
 - docker-compose
-- clickhouse version >=20.1
-- php and php-fpm version in glaber nginx >=7.2 and <8
+- apache2-utils
+- clickhouse image version >=20.1
+- php and php-fpm version in glaber-nginx image >=7.2 and <8
 
 ### Using
 ```bash
