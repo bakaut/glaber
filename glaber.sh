@@ -2,10 +2,17 @@
 set -e
 
 export args=" --build-arg GLABER_BUILD_VERSION=$(cat glaber.version)"
+# export ZBX_PORT=8050
+
+git-reset-variables-files () {
+    git checkout HEAD -- mysql/data.sql
+    git checkout HEAD -- clickhouse/users.xml
+    git checkout HEAD -- .env
+}
 
 wait () {
   while true;do
-  curl -s http://127.0.0.1:80 | grep "Username" > /dev/null  && \
+  curl -s http://127.0.0.1:${ZBX_PORT:-80} | grep "Username" > /dev/null  && \
   echo "Success" && break || \
   echo "Waiting zabbix to start..." && sleep 10;done
 }
@@ -17,7 +24,8 @@ set-passwords() {
   make-bcrypt-hash() {
     htpasswd -bnBC 8 "" $1 | grep -oP '\$2[ayb]\$.{56}' | tail -c 54
   }
-  if [ ! -f /tmp/files.changed ]; then
+  if [ ! -f .passwords.created ]; then
+    git-reset-variables-files
     ZBX_CH_PASS=$(gen-password)
     sed -i -e "s/MYSQL_PASSWORD=.*/MYSQL_PASSWORD=$(gen-password)/" \
            -e "s/ZBX_CH_PASS=.*/ZBX_CH_PASS=$ZBX_CH_PASS/" \
@@ -27,8 +35,7 @@ set-passwords() {
     ZBX_WEB_ADMIN_PASS_HASH=$(make-bcrypt-hash $ZBX_WEB_ADMIN_PASS)
     ZBX_WEB_GUEST_PASS=$(gen-password)
     ZBX_WEB_ADMIN_GUEST_HASH=$(make-bcrypt-hash $ZBX_WEB_GUEST_PASS)
-    echo "Zabbix web access http://127.0.1.1 Admin $ZBX_WEB_ADMIN_PASS" > .zbxweb
-    git checkout HEAD -- mysql/data.sql
+    echo "Zabbix web access http://127.0.1.1:${ZBX_PORT:-80} Admin $ZBX_WEB_ADMIN_PASS" > .zbxweb
     sed -i -e "6s#admin-pass-hash#$ZBX_WEB_ADMIN_PASS_HASH#" \
            -e  "7s#guest-pass-hash#$ZBX_WEB_ADMIN_GUEST_HASH#" \
     mysql/data.sql
@@ -36,7 +43,7 @@ set-passwords() {
     sed -i -e "s/<password>.*<\/password>/<password>$ZBX_CH_PASS<\/password>/" \
            -e "s/defaultuser/$ZBX_CH_USER/" \
     clickhouse/users.xml
-    touch /tmp/files.changed
+    touch .passwords.created
   fi
 }
 
@@ -65,35 +72,36 @@ command -v htpasswd >/dev/null 2>&1 || \
 build() {
   docker-compose build $args 1>/dev/null
 }
+
+start() {
+  build
+  docker-compose up -d
+  wait
+  cat .zbxweb
+}
+
 stop() {
   docker-compose down
 }
-start() {
-  docker-compose build $args 1>/dev/null
-  docker-compose up -d
-  wait
-  cat .zbxweb
-}
-recreate() {
-  docker-compose down
-  docker volume rm glaber-docker_data_clickhouse  glaber-docker_data_mysql || true
-  rm /tmp/files.changed
-  docker-compose build $args 1>/dev/null
-  docker-compose up -d
-  wait
-  cat .zbxweb
-}
+
 remove() {
   docker-compose down
   docker volume rm glaber-docker_data_clickhouse  glaber-docker_data_mysql || true
-  rm /tmp/files.changed
+  rm .passwords.created
 }
+
+recreate() {
+  remove
+  start
+}
+
 remote() {
   read -p "Are you sure than you are this repo admin [y/n] ? " -n 1 -r
   echo
   if [[ $REPLY =~ ^[Yy]$ ]]
   then
     tag=$(date '+%Y-%m-%d-%H-%M-%S')
+    git-reset-variables-files
     git checkout -b build/$tag
     git push --set-upstream origin build/$tag
   fi
