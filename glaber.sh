@@ -2,7 +2,7 @@
 set -e
 
 export args=" --build-arg GLABER_BUILD_VERSION=$(cat glaber.version)"
-# export ZBX_PORT=8050
+export ZBX_PORT=8050
 
 git-reset-variables-files () {
     git checkout HEAD -- mysql/data.sql
@@ -22,7 +22,7 @@ set-passwords() {
     < /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c12
   }
   make-bcrypt-hash() {
-    htpasswd -bnBC 8 "" $1 | grep -oP '\$2[ayb]\$.{56}' | tail -c 54
+    htpasswd -bnBC 8 "" $1 | tail -c 55
   }
   if [ ! -f .passwords.created ]; then
     git-reset-variables-files
