@@ -15,6 +15,7 @@ sed -i  -e "s/DBHost=localhost/DBHost=$MYSQL_HOST/g" \
         -e "s/\"default\"/\"$ZBX_CH_USER\"/g" \
         -e "s/\"password\"\,/\"$ZBX_CH_PASS\"\,/g" \
         -e "s/\"glaber\"/\"$ZBX_CH_DB\"/g" \
+        -e "s/DebugLevel=3/DebugLevel=$ZBX_SERVER_DEBUG_LEVEL/g" \
     "$ZBX_SERVER_CONF"
 
 echo "CacheSize=$ZBX_SERVER_CACHE_SIZE" >> $ZBX_SERVER_CONF
