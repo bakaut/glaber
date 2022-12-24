@@ -40,7 +40,7 @@ services:
         aliases:
         - glaber-nginx
     ports:
-    - "80:80" 
+    - "${ZBX_PORT:-80}:80"
     env_file:
     - .env
   glaber-server:
