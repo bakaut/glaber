@@ -2,7 +2,7 @@
 set -e
 
 export args=" --build-arg GLABER_BUILD_VERSION=$(cat glaber.version)"
-export ZBX_PORT=8050
+# export ZBX_PORT=8050
 
 git-reset-variables-files () {
     git checkout HEAD -- mysql/data.sql
