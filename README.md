@@ -3,7 +3,7 @@
 Glaber is zabbix server fork.
 
 Versions:
-- glaber     - 2.16.9
+- glaber     - 2.18.0
 - zabbix     - 5.4.11
 - mysql      - percona:8.0.29-21-centos
 - clickhouse - clickhouse-server:21.3.20
