@@ -21,7 +21,7 @@ Main differences from zabbix-server:
 - glaber server
 - glaber nginx
 - clickhouse as history storage backend
-- mysql as main database backend
+- mysql as the main database backend
 
 ## Prerequirements
 - docker >=17.12.0 
@@ -35,15 +35,12 @@ Main differences from zabbix-server:
 git clone git@github.com:bakaut/glaber.git .
 ./glaber.sh 
 Usage: ./glaber.sh <action>
-
 ./glaber.sh build    - Build docker images
 ./glaber.sh start    - Build docker images and start glaber
 ./glaber.sh stop     - Stop glaber containers
 ./glaber.sh recreate - Completely remove glaber and start it again
 ./glaber.sh remove   - Completely remove glaber installation
-./glaber.sh remote   - Remote rebuild github glaber images (only admins)
-# wait for a 7 minutes (depends on your system perfomance and internet connection speed) and use it
-http://127.0.0.1  Admin,`<random generated password>`
+./glaber.sh diag     - Collect glaber start logs and some base system info to the file
 ```
 
 ### Default credentials
@@ -54,7 +51,7 @@ http://127.0.0.1  Admin,`<random generated password>`
 
 ### After success  build:
 - Zabbix web Admin password located in `.zbxweb` and displayed to stdout
-- All passwords variables updated in `.env` file
+- All passwords variables are updated in `.env`` file
 ## Default ENV variables
 
 See `.env` file

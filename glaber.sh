@@ -5,15 +5,23 @@ export args=" --build-arg GLABER_BUILD_VERSION=$(cat glaber.version)"
 # export ZBX_PORT=8050
 
 diag () {
-  docker-compose logs --no-color clickhouse > .tmp/diag/clickhouse.log
-  docker-compose logs --no-color mysql > .tmp/diag/mysql.log
-  docker-compose logs --no-color glaber-nginx > .tmp/diag/glaber-nginx.log
-  docker-compose logs --no-color glaber-server > .tmp/diag/glaber-server.log
+  info "Collect glaber logs"
+  docker-compose logs --no-color clickhouse > .tmp/diag/clickhouse.log || true
+  docker-compose logs --no-color mysql > .tmp/diag/mysql.log || true
+  docker-compose logs --no-color glaber-nginx > .tmp/diag/glaber-nginx.log || true
+  docker-compose logs --no-color glaber-server > .tmp/diag/glaber-server.log || true
   docker-compose ps > .tmp/diag/ps.log
-  git status > .tmp/diag/gitstatus.log
+  info "Collect geneal information about system and docker"
   uname -a > .tmp/diag/uname.log
-  cat /etc/os-release > .tmp/diag/os-release 
-  zip -r .tmp/diag/diag.zip .tmp/diag/
+  git log -1 --stat > .tmp/diag/last-commit.log
+  cat /etc/os-release > .tmp/diag/os-release
+  free -m > .tmp/diag/mem.log
+  df -h   > .tmp/diag/disk.log
+  docker-compose -version > .tmp/diag/docker-compose-version.log
+  docker --version > .tmp/diag/docker-version.log
+  docker info > .tmp/diag/docker-info.log
+  info "Add diagnostic information to .tmp/diag/diag.zip"
+  zip -r .tmp/diag/diag.zip .tmp/diag/ 1>/dev/null
 }
 git-reset-variables-files () {
   git checkout HEAD -- mysql/data.sql
@@ -35,13 +43,15 @@ wait () {
     sleep 60
     counter=$((counter+1))
     if test $counter -gt $timeout;then
-      info "Zabbix start failed.Timeout 5 minute reached"
-      info "Please try to open zabbix url with credentials $(cat .zbxweb)"
+      info "Zabbix start failed.Timeout 5 minutes reached"
+      info "Please try to open zabbix url with credentials:"
+      info "$(cat .zbxweb)"
       info "If not success, please run diagnostics ./glaber.sh diag"
       exit 1
     fi 
   done
-  info "Success $(cat .zbxweb)"
+  info "Success"
+  info "$(cat .zbxweb)"
 }
 
 set-passwords() {
@@ -84,6 +94,7 @@ usage() {
   echo "$0 recreate - Completely remove glaber and start it again"
   echo "$0 remove   - Completely remove glaber installation"
   echo "$0 remote   - Remote rebuild github glaber images (only admins)"
+  echo "$0 diag     - Collect glaber start and some base system info to the file"
 }
 
 [ $# -ne 1 ] && (usage && exit 1)
@@ -97,6 +108,7 @@ command -v htpasswd >/dev/null 2>&1 || \
 { echo >&2 "htpasswd is required(apache2-utils), please install it and start over. Aborting."; exit 1; }
 
 build() {
+  [ -d ".tmp/diag/" ] || mkdir -p .tmp/diag/
   docker-compose build $args 1>.tmp/diag/docker-build.log
 }
 
@@ -114,7 +126,7 @@ stop() {
 remove() {
   docker-compose down
   docker volume rm glaber-docker_data_clickhouse  glaber-docker_data_mysql || true
-  rm .passwords.created
+  rm .passwords.created || true
 }
 
 recreate() {
