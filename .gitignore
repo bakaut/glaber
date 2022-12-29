@@ -1,3 +1,6 @@
 .tmp
 .zbxweb
 .passwords.created
+.env
+clickhouse/users.xml
+mysql/data.sql

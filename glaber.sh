@@ -1,20 +1,47 @@
 #!/usr/bin/env bash
-set -e
+set -e -x
 
 export args=" --build-arg GLABER_BUILD_VERSION=$(cat glaber.version)"
-# export ZBX_PORT=8050
+export ZBX_PORT=8050
 
+diag () {
+  docker-compose logs --no-color clickhouse > .tmp/diag/clickhouse.log
+  docker-compose logs --no-color mysql > .tmp/diag/mysql.log
+  docker-compose logs --no-color glaber-nginx > .tmp/diag/glaber-nginx.log
+  docker-compose logs --no-color glaber-server > .tmp/diag/glaber-server.log
+  docker-compose ps > .tmp/diag/ps.log
+  git status > .tmp/diag/gitstatus.log
+  uname -a > .tmp/diag/uname.log
+  cat /etc/os-release > .tmp/diag/os-release 
+  zip -r .tmp/diag/diag.zip .tmp/diag/
+}
 git-reset-variables-files () {
-    git checkout HEAD -- mysql/data.sql
-    git checkout HEAD -- clickhouse/users.xml
-    git checkout HEAD -- .env
+  git checkout HEAD -- mysql/data.sql
+  git checkout HEAD -- clickhouse/users.xml
+  git checkout HEAD -- .env
 }
 
+info () {
+  local message=$1
+  echo $(date --rfc-3339=seconds) $message
+}
 wait () {
-  while true;do
-  curl -s http://127.0.0.1:${ZBX_PORT:-80} | grep "Username" > /dev/null  && \
-  echo "Success" && break || \
-  echo "Waiting zabbix to start..." && sleep 10;done
+  while true
+  local counter=0
+  local timeout=5
+  do
+    curl -s http://127.0.0.1:${ZBX_PORT:-80} | grep "Username" > /dev/null && break
+    info "Waiting zabbix to start..."
+    sleep 60
+    counter=$((counter+1))
+    if test $counter -gt $timeout;then
+      info "Zabbix start failed.Timeout 5 minute reached"
+      info "Please try to open zabbix url with credentials $(cat .zbxweb)"
+      info "If not success, please run diagnostics ./glaber.sh diag"
+      exit 1
+    fi 
+  done
+  info "Success $(cat .zbxweb)"
 }
 
 set-passwords() {
@@ -70,14 +97,14 @@ command -v htpasswd >/dev/null 2>&1 || \
 { echo >&2 "htpasswd is required(apache2-utils), please install it and start over. Aborting."; exit 1; }
 
 build() {
-  docker-compose build $args 1>/dev/null
+  docker-compose build $args 1>.tmp/diag/docker-build.log
 }
 
 start() {
+  set-passwords
   build
   docker-compose up -d
   wait
-  cat .zbxweb
 }
 
 stop() {
@@ -107,7 +134,6 @@ remote() {
   fi
 }
 
-set-passwords
 
 case $1 in
   build)
@@ -129,6 +155,9 @@ case $1 in
     remote
     echo -n "Pushed to remote build branch"
     echo ""    
+    ;;
+  diag)
+    diag
     ;;
   *)
     echo -n "unknown command"
