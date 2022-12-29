@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-set -e -x
+set -e
 
 export args=" --build-arg GLABER_BUILD_VERSION=$(cat glaber.version)"
-export ZBX_PORT=8050
+# export ZBX_PORT=8050
 
 diag () {
   docker-compose logs --no-color clickhouse > .tmp/diag/clickhouse.log
@@ -26,9 +26,9 @@ info () {
   echo $(date --rfc-3339=seconds) $message
 }
 wait () {
-  while true
   local counter=0
   local timeout=5
+  while true
   do
     curl -s http://127.0.0.1:${ZBX_PORT:-80} | grep "Username" > /dev/null && break
     info "Waiting zabbix to start..."
