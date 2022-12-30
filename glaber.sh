@@ -140,7 +140,7 @@ remote() {
   echo
   if [[ $REPLY =~ ^[Yy]$ ]]
   then
-    tag=$(date '+%Y-%m-%d-%H-%M-%S')
+    tag=$GLABER_BUILD_VERSION-$(date '+%Y-%m-%d-%H-%M')
     git-reset-variables-files
     git checkout -b build/$tag
     git push --set-upstream origin build/$tag
