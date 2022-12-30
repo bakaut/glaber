@@ -5,11 +5,12 @@ on:
     - 'build/**'
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
     - name: Build glaber-server image
       run: |
+        export DOCKER_BUILDKIT=1
         BASE_IMAGE="$REGISTRY/$GITHUB_REPOSITORY/$PACKAGE"
         GLABER_BUILD_VERSION=$(cat glaber.version)
         GLABER_SERVER_LATEST=$BASE_IMAGE:latest
@@ -26,6 +27,7 @@ jobs:
 
     - name: Build glaber-nginx image
       run: |
+        export DOCKER_BUILDKIT=1
         BASE_IMAGE="$REGISTRY/$GITHUB_REPOSITORY/$PACKAGE"
         GLABER_BUILD_VERSION=$(cat glaber.version)
         GLABER_NGINX_LATEST=$BASE_IMAGE:latest
@@ -39,3 +41,9 @@ jobs:
       env:
         REGISTRY: docker.pkg.github.com
         PACKAGE: glaber-nginx
+    - name: Test glaber start
+      run: |
+        export DOCKER_BUILDKIT=1
+        apt-get update
+        apt-get install -y apache2-utils
+        ./glaber.sh start
