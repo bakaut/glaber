@@ -44,6 +44,6 @@ jobs:
     - name: Test glaber start
       run: |
         export DOCKER_BUILDKIT=1
-        apt-get update
-        apt-get install -y apache2-utils
+        sudo apt-get update
+        sudo apt-get install -y apache2-utils
         ./glaber.sh start
