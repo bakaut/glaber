@@ -35,8 +35,7 @@ services:
         soft: 262144
         hard: 262144
   glaber-nginx:
-    build:
-      context: ./glaber-nginx
+    image: ghcr.io/bakaut/glaber/glaber-nginx:${GLABER_BUILD_VERSION:-latest}
     networks:
       zabbix:
         aliases:
@@ -46,8 +45,7 @@ services:
     env_file:
     - .env
   glaber-server:
-    build:
-      context: ./glaber-server
+    image: ghcr.io/bakaut/glaber/glaber-server:${GLABER_BUILD_VERSION:-latest}
     cap_add:
     - NET_RAW
     env_file:
