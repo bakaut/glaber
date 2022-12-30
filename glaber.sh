@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
-export args=" --build-arg GLABER_BUILD_VERSION=$(cat glaber.version)"
+export GLABER_BUILD_VERSION=$(cat glaber.version)
+export args=" --build-arg GLABER_BUILD_VERSION=$GLABER_BUILD_VERSION"
 # export ZBX_PORT=8050
 
 diag () {
