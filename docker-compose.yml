@@ -48,6 +48,8 @@ services:
   glaber-server:
     build:
       context: ./glaber-server
+    cap_add:
+    - NET_RAW
     env_file:
     - .env
     ports:
