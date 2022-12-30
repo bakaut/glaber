@@ -3,6 +3,8 @@ services:
   mysql:
     build:
       context: ./mysql
+    cap_add:
+    - SYS_NICE
     env_file:
     - .env
     networks:
