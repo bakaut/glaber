@@ -7,6 +7,19 @@ services:
     - SYS_NICE
     env_file:
     - .env
+    healthcheck:
+      test:
+        - "CMD"
+        - "/usr/bin/mysql"
+        - "--user=$MYSQL_USER"
+        - "--password=$MYSQL_PASSWORD"
+        - "--database=$MYSQL_DATABASE"
+        - "--execute"
+        - 'SELECT count(*) from users;'
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s    
     networks:
       zabbix:
         aliases:
@@ -18,6 +31,22 @@ services:
   clickhouse:
     build:
       context: ./clickhouse
+    healthcheck:
+      test:
+        - "CMD"
+        - "clickhouse-client"
+        - "--user"
+        - "$ZBX_CH_USER"
+        - "--password"
+        - "$ZBX_CH_PASS"
+        - "--database"
+        - "$ZBX_CH_DB"
+        - "--query"
+        - "select count(*) from history_str;"
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 15s
     env_file:
     - .env
     networks:
@@ -36,6 +65,20 @@ services:
         hard: 262144
   glaber-nginx:
     image: ghcr.io/bakaut/glaber/glaber-nginx:${GLABER_BUILD_VERSION:-latest}
+    healthcheck:
+      test:
+        - "CMD"
+        - "wget"
+        - "-q"
+        - "127.0.0.1"
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 10s
+    depends_on:
+    - glaber-server
+    - mysql
+    - clickhouse
     networks:
       zabbix:
         aliases:
@@ -52,6 +95,9 @@ services:
     - .env
     ports:
     - "10051"
+    depends_on:
+    - mysql
+    - clickhouse
     networks:
       zabbix:
         aliases:
