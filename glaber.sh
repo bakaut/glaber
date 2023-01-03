@@ -141,9 +141,21 @@ remote() {
   if [[ $REPLY =~ ^[Yy]$ ]]
   then
     tag=$GLABER_BUILD_VERSION-$(date '+%Y-%m-%d-%H-%M')
-    git-reset-variables-files
-    git checkout -b build/$tag
-    git push --set-upstream origin build/$tag
+    VERSION_URL="https://gitlab.com/mikler/glaber/-/raw/master/include/version.h"
+    GLABER_REPO_VERSION=$(curl -s $VERSION_URL | grep "GLABER_VERSION" | grep -Po "(\d+\.\d+\.\d+)")
+    if [[ "$GLABER_REPO_VERSION" == "$GLABER_BUILD_VERSION" ]]
+      then
+        info "No glaber build requered. Version equals"
+      else
+        git-reset-variables-files
+        git checkout -b build/$tag
+        echo $GLABER_REPO_VERSION > glaber.version
+        git add glaber.version
+        git commit -m "glaber version updated"
+        git push --set-upstream origin build/$tag
+        echo -n "Pushed to remote build branch"
+        echo "" 
+    fi
   fi
 }
 
@@ -165,9 +177,7 @@ case $1 in
     remove
     ;;
   remote)
-    remote
-    echo -n "Pushed to remote build branch"
-    echo ""    
+    remote   
     ;;
   diag)
     diag
