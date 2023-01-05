@@ -164,9 +164,6 @@ remote() {
           then
           git-reset-variables-files
           git checkout -b build/$tag
-          echo $GLABER_REPO_VERSION > glaber.version
-          git add glaber.version
-          git commit -m "glaber version updated"
           git push --set-upstream origin build/$tag
           echo -n "Pushed to remote build branch"
           echo ""
