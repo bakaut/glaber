@@ -96,7 +96,6 @@ usage() {
   echo "$0 start    - Build docker images and start glaber"
   echo "$0 stop     - Stop glaber containers"
   echo "$0 recreate - Completely remove glaber and start it again"
-  echo "$0 remove   - Completely remove glaber installation"
   echo "$0 remote   - Remote rebuild github glaber images (only admins)"
   echo "$0 diag     - Collect glaber start and some base system info to the file"
 }
@@ -118,6 +117,7 @@ build() {
   [ -d ".clickhouse/clickhouse_data/" ] || \
   sudo install -d -o 101 -g 103 clickhouse/clickhouse_data
   docker-compose build $args 1>.tmp/diag/docker-build.log
+  docker-compose pull 1>.tmp/diag/docker-build.log
 }
 
 
@@ -134,9 +134,13 @@ stop() {
 
 remove() {
   docker-compose down
-  # are you shure?
-  rm .passwords.created .zbxweb || true
-  sudo rm -rf  mysql/mysql_data/ clickhouse/clickhouse_data
+  read -p "Are you sure to completely remove glaber with database [y/n] ? " -n 1 -r
+  echo
+  if [[ $REPLY =~ ^[Yy]$ ]]
+  then
+    rm .passwords.created .zbxweb || true
+    sudo rm -rf  mysql/mysql_data/ clickhouse/clickhouse_data
+  fi
 }
 
 recreate() {
