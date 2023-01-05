@@ -79,8 +79,11 @@ set-passwords() {
     mysql/data.sql
     source .env
     sed -i -e "s/<password>.*<\/password>/<password>$ZBX_CH_PASS<\/password>/" \
+           -e "s/10000000000/$ZBX_CH_CONFIG_MAX_MEMORY_USAGE/" \
            -e "s/defaultuser/$ZBX_CH_USER/" \
     clickhouse/users.xml
+    sed -i -e "s/3G/$MYSQL_CONFIG_INNODB_BUFFER_POOL_SIZE/" \
+    mysql/etc/my.cnf.d/innodb.conf
     touch .passwords.created
   fi
 }
@@ -93,7 +96,6 @@ usage() {
   echo "$0 start    - Build docker images and start glaber"
   echo "$0 stop     - Stop glaber containers"
   echo "$0 recreate - Completely remove glaber and start it again"
-  echo "$0 remove   - Completely remove glaber installation"
   echo "$0 remote   - Remote rebuild github glaber images (only admins)"
   echo "$0 diag     - Collect glaber start and some base system info to the file"
 }
@@ -110,8 +112,14 @@ command -v htpasswd >/dev/null 2>&1 || \
 
 build() {
   [ -d ".tmp/diag/" ] || mkdir -p .tmp/diag/
+  [ -d ".mysql/mysql_data/" ] || \
+  sudo install -d -o 1001 -g 1001 mysql/mysql_data/
+  [ -d ".clickhouse/clickhouse_data/" ] || \
+  sudo install -d -o 101 -g 103 clickhouse/clickhouse_data
   docker-compose build $args 1>.tmp/diag/docker-build.log
+  docker-compose pull 1>.tmp/diag/docker-build.log
 }
+
 
 start() {
   set-passwords
@@ -126,8 +134,13 @@ stop() {
 
 remove() {
   docker-compose down
-  docker volume rm glaber-docker_data_clickhouse  glaber-docker_data_mysql || true
-  rm .passwords.created || true
+  read -p "Are you sure to completely remove glaber with database [y/n] ? " -n 1 -r
+  echo
+  if [[ $REPLY =~ ^[Yy]$ ]]
+  then
+    rm .passwords.created .zbxweb || true
+    sudo rm -rf  mysql/mysql_data/ clickhouse/clickhouse_data
+  fi
 }
 
 recreate() {
@@ -146,6 +159,15 @@ remote() {
     if [[ "$GLABER_REPO_VERSION" == "$GLABER_BUILD_VERSION" ]]
       then
         info "No glaber build requered. Version equals"
+        read -p "Do you want to process [y/n] ? " -n 1 -r
+        if [[ $REPLY =~ ^[Yy]$ ]]
+          then
+          git-reset-variables-files
+          git checkout -b build/$tag
+          git push --set-upstream origin build/$tag
+          echo -n "Pushed to remote build branch"
+          echo ""
+        fi
       else
         git-reset-variables-files
         git checkout -b build/$tag

@@ -1,4 +1,4 @@
-version: "3.5"
+version: "3.9"
 services:
   mysql:
     build:
@@ -27,7 +27,12 @@ services:
     ports:
     - "3306" 
     volumes:
-    - data_mysql:/var/lib/mysql
+    - type: bind
+      source: ./mysql/mysql_data/
+      target: /var/lib/mysql/
+    - type: bind
+      source: ./mysql/etc/my.cnf.d/innodb.conf
+      target: /etc/my.cnf.d/innodb.conf
   clickhouse:
     build:
       context: ./clickhouse
@@ -57,7 +62,9 @@ services:
     - "8123"
     - "9000" 
     volumes:
-    - data_clickhouse:/var/lib/clickhouse
+    - type: bind
+      source: ./clickhouse/clickhouse_data/
+      target: /var/lib/clickhouse
     ulimits:
       nproc: 65535
       nofile:
@@ -104,6 +111,3 @@ services:
         - glaber-server-1
 networks:
   zabbix:
-volumes:
-  data_mysql:
-  data_clickhouse:
