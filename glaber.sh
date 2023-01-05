@@ -79,8 +79,11 @@ set-passwords() {
     mysql/data.sql
     source .env
     sed -i -e "s/<password>.*<\/password>/<password>$ZBX_CH_PASS<\/password>/" \
+           -e "s/10000000000/$ZBX_CH_CONFIG_MAX_MEMORY_USAGE/" \
            -e "s/defaultuser/$ZBX_CH_USER/" \
     clickhouse/users.xml
+    sed -i -e "s/3G/$MYSQL_CONFIG_INNODB_BUFFER_POOL_SIZE/" \
+    mysql/etc/my.cnf.d/innodb.conf
     touch .passwords.created
   fi
 }
@@ -110,8 +113,13 @@ command -v htpasswd >/dev/null 2>&1 || \
 
 build() {
   [ -d ".tmp/diag/" ] || mkdir -p .tmp/diag/
+  [ -d ".mysql/mysql_data/" ] || \
+  sudo install -d -o 1001 -g 1001 mysql/mysql_data/
+  [ -d ".clickhouse/clickhouse_data/" ] || \
+  sudo install -d -o 101 -g 103 clickhouse/clickhouse_data
   docker-compose build $args 1>.tmp/diag/docker-build.log
 }
+
 
 start() {
   set-passwords
@@ -126,8 +134,9 @@ stop() {
 
 remove() {
   docker-compose down
-  docker volume rm glaber-docker_data_clickhouse  glaber-docker_data_mysql || true
-  rm .passwords.created || true
+  # are you shure?
+  rm .passwords.created .zbxweb || true
+  sudo rm -rf  mysql/mysql_data/ clickhouse/clickhouse_data
 }
 
 recreate() {
