@@ -1,3 +1,5 @@
 .tmp
 .zbxweb
 .passwords.created
+mysql_data
+clickhouse_data
