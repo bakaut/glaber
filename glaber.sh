@@ -161,6 +161,7 @@ remote() {
         info "No glaber build requered. Version equals"
         read -p "Do you want to process [y/n] ? " -n 1 -r
         if [[ $REPLY =~ ^[Yy]$ ]]
+          then
           git-reset-variables-files
           git checkout -b build/$tag
           echo $GLABER_REPO_VERSION > glaber.version
