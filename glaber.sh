@@ -159,6 +159,17 @@ remote() {
     if [[ "$GLABER_REPO_VERSION" == "$GLABER_BUILD_VERSION" ]]
       then
         info "No glaber build requered. Version equals"
+        read -p "Do you want to process [y/n] ? " -n 1 -r
+        if [[ $REPLY =~ ^[Yy]$ ]]
+          git-reset-variables-files
+          git checkout -b build/$tag
+          echo $GLABER_REPO_VERSION > glaber.version
+          git add glaber.version
+          git commit -m "glaber version updated"
+          git push --set-upstream origin build/$tag
+          echo -n "Pushed to remote build branch"
+          echo ""
+        fi
       else
         git-reset-variables-files
         git checkout -b build/$tag
