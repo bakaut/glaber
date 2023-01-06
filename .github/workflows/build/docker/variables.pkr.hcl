@@ -15,7 +15,7 @@ variable "registry_user" {
 
 variable "registry_password" {
   type    = string
-  default = "${env("GITHUB_PASSWORD")}"
+  default = "${env("DOCKER_PASSWORD")}"
   sensitive = true
 }
 
