@@ -18,4 +18,4 @@ RUN mkdir -p /var/lib/mysql/vcdump/ /run/zabbix && \
 
 COPY docker-entrypoint.sh /root/docker-entrypoint.sh
 
-CMD ["/root/docker-entrypoint.sh"]
+CMD ["/bin/bash","/root/docker-entrypoint.sh"]
