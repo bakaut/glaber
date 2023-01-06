@@ -11,6 +11,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Setup `packer`
         uses: hashicorp/setup-packer@main
         id: setup
@@ -27,18 +34,10 @@ jobs:
         id: validate
         run: |
           cd .github/workflows/build/docker
-          packer validate .
-      
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          packer validate .      
       
       - name: Run `packer build`
         id: build
         run: |
           export GLABER_BUILD_VERSION=$(cat glaber.version)
-          export GITHUB_PASSWORD=${{ secrets.GITHUB_TOKEN }}
           packer build .
