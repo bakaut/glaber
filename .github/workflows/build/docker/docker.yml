@@ -2,7 +2,7 @@ name: Docker build images with packer
 on:
   push:
     branches:
-    - 'feature/change-docker-image-build-system-to-packer'
+    - feature/change-docker-image-build-system-to-packer
 jobs:
   packer:
     runs-on: ubuntu-22.04
