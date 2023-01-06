@@ -3,7 +3,8 @@ source "docker" "glaber-server" {
   commit = true
   changes = [
     "ENV DEBIAN_FRONTEND noninteractive",
-    "CMD [\"/bin/bash\",\"/root/docker-entrypoint.sh\"]"
+    "CMD /root/docker-entrypoint.sh",
+    "ENTRYPOINT /bin/bash"
   ]
 }
 
