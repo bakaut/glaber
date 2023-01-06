@@ -40,4 +40,5 @@ jobs:
         id: build
         run: |
           export GLABER_BUILD_VERSION=$(cat glaber.version)
+          cd .github/workflows/build/docker
           packer build .
