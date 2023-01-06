@@ -33,6 +33,4 @@ jobs:
         id: build
         run: |
           export GLABER_BUILD_VERSION=$(cat glaber.version)
-          export GITHUB_PASSWORD=${{ secrets.GITHUB_TOKEN }}
-          id
-          packer -debug build .
+          packer build .
