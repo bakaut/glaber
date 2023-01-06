@@ -13,11 +13,6 @@ variable "registry_user" {
   default = "${env("GITHUB_ACTOR")}"
 }
 
-variable "registry_email" {
-  type    = string
-  default = "fifo.mail@gmail.com"
-}
-
 variable "registry_password" {
   type    = string
   default = "${env("GITHUB_PASSWORD")}"

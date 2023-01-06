@@ -47,7 +47,6 @@ build {
       login_server = "${var.registry}"
       login_username = "${var.registry_user}"
       login_password = "${var.registry_password}"
-      login_email = "${var.registry_email}"
     }
   }
   post-processors {
@@ -59,7 +58,6 @@ build {
         login_server = "${var.registry}"
         login_username = "${var.registry_user}"
         login_password = "${var.registry_password}"
-        login_email = "${var.registry_email}"
     }
   }
 }
