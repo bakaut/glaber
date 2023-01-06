@@ -44,7 +44,20 @@ build {
       tags = ["${var.glaber_build_version}-pkr"]
     }
     post-processor "docker-push" {
-      login_server = "ghcr.io"
+      login = true
+      login_server = "${var.registry}"
+      login_username = "${var.registry_user}"
+      login_password = "${var.registry_password}"
+    }
+  }
+  post-processors {
+    post-processor "docker-tag" {
+      repository =  "${var.registry}/${var.github_repository}/${var.glaber_server_name}" 
+      tags = ["${var.glaber_build_version}-pkr"]
+    }
+    post-processor "docker-push" {
+      login = true
+      login_server = "${var.registry}"
       login_username = "${var.registry_user}"
       login_password = "${var.registry_password}"
     }
