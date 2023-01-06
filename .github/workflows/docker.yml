@@ -34,6 +34,5 @@ jobs:
         run: |
           export GLABER_BUILD_VERSION=$(cat glaber.version)
           export GITHUB_PASSWORD=${{ secrets.GITHUB_TOKEN }}
-          docker login docker.pkg.github.com --username $GITHUB_ACTOR --password ${{ secrets.GITHUB_TOKEN }}
-          cd .github/workflows/build/docker
-          packer build .
+          id
+          packer -debug build .
