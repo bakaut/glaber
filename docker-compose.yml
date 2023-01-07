@@ -96,6 +96,10 @@ services:
     - .env
   glaber-server:
     image: ghcr.io/bakaut/glaber/glaber-server:${GLABER_BUILD_VERSION:-latest}
+    volumes:
+    - type: bind
+      source: ./glaber-server/workers_script/
+      target: /usr/share/glaber/workers/
     cap_add:
     - NET_RAW
     env_file:
