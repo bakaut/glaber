@@ -28,6 +28,7 @@ git-reset-variables-files () {
   git checkout HEAD -- mysql/data.sql
   git checkout HEAD -- clickhouse/users.xml
   git checkout HEAD -- .env
+  git checkout HEAD -- glaber.sh
 }
 
 info () {
