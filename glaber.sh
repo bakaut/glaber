@@ -23,6 +23,8 @@ diag () {
   docker info > .tmp/diag/docker-info.log
   info "Add diagnostic information to .tmp/diag/diag.zip"
   zip -r .tmp/diag/diag.zip .tmp/diag/ 1>/dev/null
+  info "Fill free to create issue https://github.com/bakaut/glaber/issues/new"
+  info "And attach .tmp/diag/diag.zip to it"
 }
 git-reset-variables-files () {
   git checkout HEAD -- mysql/data.sql
