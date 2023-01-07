@@ -30,21 +30,21 @@ build {
     ]
   }
   provisioner "file" {
-  source = "../../../../glaber-server/etc/zabbix/zabbix_server.conf"
-  destination = "/etc/zabbix/zabbix_server.conf"
+    source      = "../../../../glaber-server/etc/zabbix/zabbix_server.conf"
+    destination = "/etc/zabbix/zabbix_server.conf"
   }
   provisioner "file" {
-  source = "../../../../glaber-server/docker-entrypoint.sh"
-  destination = "/root/docker-entrypoint.sh"
+    source      = "../../../../glaber-server/docker-entrypoint.sh"
+    destination = "/root/docker-entrypoint.sh"
   }
   post-processors {
     post-processor "docker-tag" {
-      repository =  "${var.registry}/${var.github_repository}/${var.glaber_server_name}" 
-      tags = ["${var.glaber_build_version}-pkr", "latest-pkr"]
+      repository = "${local.glaber_server_repo}"
+      tags       = ["${var.glaber_build_version}-pkr", "latest-pkr"]
     }
     post-processor "docker-push" {
-      login = true
-      login_server = "${var.registry}"
+      login          = true
+      login_server   = "${var.registry}"
       login_username = "${var.registry_user}"
       login_password = "${var.registry_password}"
     }

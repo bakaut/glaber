@@ -14,8 +14,8 @@ variable "registry_user" {
 }
 
 variable "registry_password" {
-  type    = string
-  default = "${env("DOCKER_PASSWORD")}"
+  type      = string
+  default   = "${env("DOCKER_PASSWORD")}"
   sensitive = true
 }
 
@@ -32,4 +32,9 @@ variable "glaber_server_name" {
 variable "glaber_web_name" {
   type    = string
   default = "glaber-nginx"
+}
+
+locals {
+  glaber_server_repo = "${var.registry}/${var.github_repository}/${var.glaber_server_name}"
+  glaber_web_repo    = "${var.registry}/${var.github_repository}/${var.glaber_web_name}"
 }
