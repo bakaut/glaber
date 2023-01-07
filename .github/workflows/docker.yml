@@ -20,6 +20,7 @@ jobs:
       - name: Run `packer init`
         id: init
         run: |
+          export PACKER_GITHUB_API_TOKEN=${{ secrets.PACKER_TOKEN }}
           cd .github/workflows/build/docker
           packer init .
 
