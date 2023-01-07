@@ -28,6 +28,7 @@ git-reset-variables-files () {
   git checkout HEAD -- mysql/data.sql
   git checkout HEAD -- clickhouse/users.xml
   git checkout HEAD -- .env
+  git checkout HEAD -- glaber.sh
 }
 
 info () {
@@ -140,6 +141,7 @@ remove() {
   then
     rm .passwords.created .zbxweb || true
     sudo rm -rf  mysql/mysql_data/ clickhouse/clickhouse_data
+    git-reset-variables-files
   fi
 }
 

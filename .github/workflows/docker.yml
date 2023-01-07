@@ -1,0 +1,40 @@
+name: Docker build images with packer
+on:
+  push:
+    branches:
+    - 'packer/**'
+jobs:
+  packer:
+    runs-on: ubuntu-22.04
+    name: Run Packer
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup `packer`
+        uses: hashicorp/setup-packer@main
+        id: setup
+        with:
+          version: "1.8.5" 
+
+      - name: Run `packer init`
+        id: init
+        run: |
+          export PACKER_GITHUB_API_TOKEN=${{ secrets.PACKER_TOKEN }}
+          cd .github/workflows/build/docker
+          packer init .
+
+      - name: Run `packer validate`
+        id: validate
+        run: |
+          cd .github/workflows/build/docker
+          packer validate .      
+      
+      - name: Run `packer build`
+        id: build
+        run: |
+          export GLABER_BUILD_VERSION=$(cat glaber.version)
+          export DOCKER_USERNAME=$GITHUB_ACTOR
+          export DOCKER_PASSWORD=${{ secrets.GITHUB_TOKEN }}
+          cd .github/workflows/build/docker
+          packer build .
