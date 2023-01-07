@@ -3,3 +3,4 @@
 .passwords.created
 mysql_data
 clickhouse_data
+workers_script
