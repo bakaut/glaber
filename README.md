@@ -1,4 +1,4 @@
-# Dockerized [glaber](https://glaber.io/)
+# [glaber](https://glaber.io/) docker appliance
 
 Glaber is zabbix server fork (currently based on zabbix 5.4.11).
 

@@ -3,6 +3,9 @@ source "docker" "glaber-web-nginx" {
   commit = true
   changes = [
     "ENV DEBIAN_FRONTEND noninteractive",
+    "ENV LANG en_US.UTF-8",
+    "ENV LANGUAGE en_US:en",
+    "ENV LC_ALL en_US.UTF-8",
     "VOLUME /etc/ssl/nginx",
     "WORKDIR /usr/share/zabbix",
     "EXPOSE 80",
@@ -19,7 +22,7 @@ build {
     inline = [
       "apt-get update",
       "apt-get install -y wget software-properties-common nmap gnupg2 openssl",
-      "apt-get install -y ca-certificates supervisor default-mysql-client",
+      "apt-get install -y ca-certificates supervisor default-mysql-client locales",
       "apt-get install -y lsb-release apt-transport-https",
       "wget -qO - https://glaber.io/repo/key/repo.gpg | apt-key add -",
       "wget -qO - https://nginx.org/keys/nginx_signing.key | apt-key add -",
@@ -28,7 +31,10 @@ build {
       "apt-get install -y glaber-nginx-conf=1:${var.glaber_build_version}*",
       "rm -rf /var/lib/{apt,dpkg,cache,log}",
       "apt-get autoremove --yes",
-      "apt-get clean autoclean"
+      "apt-get clean autoclean",
+      "sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen",
+      "sed -i '/ru_RU.UTF-8/s/^# //g' /etc/locale.gen",
+      "locale-gen"
     ]
   }
   provisioner "file" {
