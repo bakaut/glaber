@@ -28,7 +28,7 @@ This setup enough for zabbix setup with 20k nvps perfomance.
 
 # Software requirements:
 
-Linux operation system with software installed:
+Linux operation system with internet access and software installed:
 - docker >=20.10.22 
 - docker-compose >=1.29.2
 - apache2-utils
@@ -43,13 +43,14 @@ Linux operation system with software installed:
 # Migration guide (under develop):
 
 - Feel free to ask a [solution](https://glaber.ru/pricing.html) according to your infrastructure
-- As glaber and zabbix have backward compatibility you can try to replace one zabbix component to glaber component one by one (for example change zabbix poxy to glaber proxy)
-- You can install glaber in parallel to zabbix and redirect all zabbix agents and zabbix proxys to the glaber server
+- As glaber and zabbix have backward compatibility you can try to replace one zabbix component to glaber component one by one (for example change zabbix proxy to glaber proxy)
+- You can install glaber in parallel to zabbix and redirect all zabbix agents and zabbix proxy to the glaber server
 
 
 # Installation:
 
 - Make directory for glaber:
+
   `mkdir /opt/glaber`
 - Copy this repository to glaber directory:
   ```bash
@@ -57,8 +58,10 @@ Linux operation system with software installed:
   git clone git@github.com:bakaut/glaber.git .
   ```
 - Start glaber:
-`./glaber.sh start`
-This action create passwords for clickhouse ans mysql and docker-compose up all glaber components.
+
+  `./glaber.sh start`
+
+This action create passwords for clickhouse ans mysql and docker-compose up all glaber components. This action needs sudo access.
 
 # After success  build and start:
 - Zabbix web Admin password located in `.zbxweb` and displayed to stdout
@@ -73,12 +76,12 @@ This action create passwords for clickhouse ans mysql and docker-compose up all 
 
 # Default ENV variables:
 
-All variables, their default values and their default behavior are described described in `.env` file
+All variables, their default values and their default behavior are described in `.env` file
 
-# Using:
+# Usage:
 ```bash
-./glaber.sh 
-Usage: ./glaber.sh <action>
+./glaber.sh <action>
+
 ./glaber.sh build    - Build docker images
 ./glaber.sh start    - Build docker images and start glaber
 ./glaber.sh stop     - Stop glaber containers
