@@ -114,6 +114,7 @@ command -v htpasswd >/dev/null 2>&1 || \
 { echo >&2 "htpasswd is required(apache2-utils), please install it and start over. Aborting."; exit 1; }
 
 build() {
+  [ -d "glaber-server/workers_script/" ] || mkdir -p glaber-server/workers_script/
   [ -d ".tmp/diag/" ] || mkdir -p .tmp/diag/
   [ -d ".mysql/mysql_data/" ] || \
   sudo install -d -o 1001 -g 1001 mysql/mysql_data/
