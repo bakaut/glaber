@@ -47,6 +47,3 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y apache2-utils
         ./glaber.sh start
-        sudo curl ifconfig.me
-        sudo iptables -I INPUT 1 -p tcp --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-        sleep 300
