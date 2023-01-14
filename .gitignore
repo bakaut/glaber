@@ -1,6 +1,7 @@
 .tmp
 .zbxweb
 .passwords.created
+.hurl
 mysql_data
 clickhouse_data
 workers_script
