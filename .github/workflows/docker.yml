@@ -38,3 +38,10 @@ jobs:
           export DOCKER_PASSWORD=${{ secrets.GITHUB_TOKEN }}
           cd .github/workflows/build/docker
           packer build .
+      - name: Testing glaber server start
+        id: test
+        run: |
+          export GLABER_BUILD_VERSION=$(cat glaber.version)-pkr
+          sudo apt-get update
+          sudo apt-get install -y apache2-utils
+          ./glaber.sh start

@@ -1,12 +1,12 @@
-# [glaber](https://glaber.io/) docker appliance
+# Glaber docker appliance
 
-Glaber is zabbix server fork (currently based on zabbix 5.4.11).
+[Glaber](https://glaber.io/) is a zabbix server fork (currently based on zabbix 5.4.11).
 
 Key differences from zabbix:
-- Better perfomance (x100 greater then zabbix)
+Better performance (x100 greater than zabbix)
 
 Key similarities from zabbix:
-- 100% compatibility with zabbix (except history api)
+- 100% compatibility with zabbix (except history)
 ![image](pictures/compatibility.png)
 
 This repo can be used as starting point to **migrate from your current zabbix installation to glaber**.
@@ -20,11 +20,10 @@ The main reasons for this may be:
 
 # Hardware requirements:
 
-- CPU:  1 cpu like `cpu xeon e5` perfomance enough.
+- CPU:  1 cpu like `cpu `xeon e5` performance enough.
 - RAM:  8G RAM.
-- DISK: SSD preferred. Depend from your zabbix setup.
-
-This setup enough for zabbix setup with 20k nvps perfomance.
+- DISK: SSD preferred. Depend on your zabbix setup.
+This setup is enough for zabbix setup with 20k nvps performance.
 
 # Software requirements:
 
@@ -33,23 +32,22 @@ Linux operation system with internet access and software installed:
 - docker-compose >=1.29.2
 - apache2-utils
 
-## Components 
+## Components:
 
 - glaber server
 - glaber nginx
 - clickhouse as history storage backend
 - mysql as the main database backend
 
-# Migration guide (under develop):
+# Migration guide (under development):
 
-- Feel free to ask a [solution](https://glaber.ru/pricing.html) according to your infrastructure
-- As glaber and zabbix have backward compatibility you can try to replace one zabbix component to glaber component one by one (for example change zabbix proxy to glaber proxy)
+- Feel free to ask for a [solution](https://glaber.ru/pricing.html) according to your infrastructure
+- As glaber and zabbix have backward compatibility you can try to replace one zabbix component with glaber component one by one (for example change zabbix proxy to glaber proxy)
 - You can install glaber in parallel to zabbix and redirect all zabbix agents and zabbix proxy to the glaber server
 
 
 # Installation:
-
-- Make directory for glaber:
+Make a directory for glaber:
 
   `mkdir /opt/glaber`
 - Copy this repository to glaber directory:
@@ -92,15 +90,15 @@ All variables, their default values and their default behavior are described in 
 
 # Restrictions accepted:
 
-- Community support (feel free to make [issue](https://github.com/bakaut/glaber/issues/new) or write to telegram group https://t.me/glaber_group)
+- Community support (feel free to make an [issue](https://github.com/bakaut/glaber/issues/new) or write to the telegram group https://t.me/glaber_group)
 - Supported software version:
   - Only one last version. Currently 2.18.0 for glaber based on zabbix 5.4.11
     - glaber-server-mysql
     - glaber-nginx
     - clickhouse-server, docker image version 21.3.20
-    - percona, docker image version 8.0.29-21-centos
+    - percona-mysql, docker image version 8.0.29-21-centos
 
 - Variables:
-  - Only a part of the main parameters has been moved to ``.env``. If you need other, fill free to create [issue](https://github.com/bakaut/glaber/issues/new)
+  - Only a part of the main parameters has been moved to ``.env``. If you need another, fill free to create an [issue](https://github.com/bakaut/glaber/issues/new)
 
 These restrictions apply only to this repository, to the docker version of glaber, not to the glaber product in general.

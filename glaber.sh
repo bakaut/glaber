@@ -5,6 +5,20 @@ export GLABER_BUILD_VERSION=$(cat glaber.version)
 export args=" --build-arg GLABER_BUILD_VERSION=$GLABER_BUILD_VERSION"
 # export ZBX_PORT=8050
 
+apitest () {
+  info "Install hurl for testing glaber"
+  HURL_VERSION="1.8.0"
+  [ -d ".tmp/hurl-$HURL_VERSION" ] || \
+  curl -sL https://github.com/Orange-OpenSource/hurl/releases/download/\
+$HURL_VERSION/hurl-$HURL_VERSION-x86_64-linux.tar.gz | \
+  tar xvz -C .tmp/ 1>/dev/null
+  info "Testing that glaber-server is runing"
+  .tmp/hurl-$HURL_VERSION/hurl  -o .tmp/hurl.log \
+    --variables-file=.github/workflows/test/.hurl \
+    --retry --retry-max-count 20 --retry-interval 15000 \
+    .github/workflows/test/glaber-runing.hurl
+}
+
 diag () {
   info "Collect glaber logs"
   docker-compose logs --no-color clickhouse > .tmp/diag/clickhouse.log || true
@@ -30,7 +44,6 @@ git-reset-variables-files () {
   git checkout HEAD -- mysql/data.sql
   git checkout HEAD -- clickhouse/users.xml
   git checkout HEAD -- .env
-  git checkout HEAD -- glaber.sh
 }
 
 info () {
@@ -38,24 +51,12 @@ info () {
   echo $(date --rfc-3339=seconds) $message
 }
 wait () {
-  local counter=0
-  local timeout=5
-  while true
-  do
-    curl -s http://127.0.0.1:${ZBX_PORT:-80} | grep "Username" > /dev/null && break
-    info "Waiting zabbix to start..."
-    sleep 60
-    counter=$((counter+1))
-    if test $counter -gt $timeout;then
-      info "Zabbix start failed.Timeout 5 minutes reached"
-      info "Please try to open zabbix url with credentials:"
-      info "$(cat .zbxweb)"
-      info "If not success, please run diagnostics ./glaber.sh diag"
-      exit 1
-    fi 
-  done
-  info "Success"
-  info "$(cat .zbxweb)"
+  info "Waiting zabbix to start..."
+  apitest && info "Success" && info "$(cat .zbxweb)" || \
+  info "Zabbix start failed.Timeout 5 minutes reached" \
+  info "Please try to open zabbix url with credentials:" \
+  info "$(cat .zbxweb)" \
+  info "If not success, please run diagnostics ./glaber.sh diag" 
 }
 
 set-passwords() {
@@ -87,6 +88,9 @@ set-passwords() {
     clickhouse/users.xml
     sed -i -e "s/3G/$MYSQL_CONFIG_INNODB_BUFFER_POOL_SIZE/" \
     mysql/etc/my.cnf.d/innodb.conf
+    echo "user=Admin" > .github/workflows/test/.hurl
+    echo "pass=$ZBX_WEB_ADMIN_PASS" >> .github/workflows/test/.hurl
+    echo "port=${ZBX_PORT:-80}" >> .github/workflows/test/.hurl
     touch .passwords.created
   fi
 }
@@ -142,7 +146,7 @@ remove() {
   echo
   if [[ $REPLY =~ ^[Yy]$ ]]
   then
-    rm .passwords.created .zbxweb || true
+    rm .passwords.created .zbxweb .github/workflows/test/.hurl || true
     sudo rm -rf  mysql/mysql_data/ clickhouse/clickhouse_data
     git-reset-variables-files
   fi
@@ -208,6 +212,9 @@ case $1 in
     ;;
   diag)
     diag
+    ;;
+  test)
+    apitest
     ;;
   *)
     echo -n "unknown command"
