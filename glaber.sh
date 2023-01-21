@@ -140,7 +140,7 @@ remote() {
   # git checkout -b packer/$tag
   # git push --set-upstream origin packer/$tag
   git checkout $current_branch
-  echo -n "Pushed to remote build and packer branch"
+  echo -n "Pushed to remote build branch"
 }
 
 # variables

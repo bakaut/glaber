@@ -22,11 +22,11 @@ jobs:
       uses: docker/build-push-action@v3
       with:
         context: "{{defaultContext}}:glaber-server"
-        tags: ghcr.io/bakaut/glaber/glaber-server:{GITHUB_SHA::7}
+        tags: ghcr.io/bakaut/glaber/glaber-server:${{ github.sha }}
         build-args: GLABER_BUILD_VERSION=$GLABER_BUILD_VERSION
         push: true
         cache-to: |
-          $REGISTRY/$GITHUB_REPOSITORY/$PACKAGE:{GITHUB_SHA::7}-cache
+          ghcr.io/bakaut/glaber/glaber-server:${{ github.sha }}-cache
       env:
         REGISTRY: docker.pkg.github.com
         PACKAGE: glaber-server
