@@ -15,7 +15,7 @@ jobs:
         uses: hashicorp/setup-packer@main
         id: setup
         with:
-          version: "1.8.5" 
+          version: "1.8.5"
 
       - name: Run `packer init`
         id: init
@@ -28,8 +28,8 @@ jobs:
         id: validate
         run: |
           cd .github/workflows/build/docker
-          packer validate .      
-      
+          packer validate .
+
       - name: Run `packer build`
         id: build
         run: |
@@ -38,7 +38,7 @@ jobs:
           export DOCKER_PASSWORD=${{ secrets.GITHUB_TOKEN }}
           cd .github/workflows/build/docker
           packer build .
-      - name: Testing glaber server start
+      - name: Testing glaber-server is started
         id: test
         run: |
           export GLABER_BUILD_VERSION=$(cat glaber.version)-pkr
