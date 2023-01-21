@@ -137,9 +137,9 @@ remote() {
   git-reset-variables-files
   git checkout -b build/$tag
   git push --set-upstream origin build/$tag
-  git checkout -b packer/$tag
-  git push --set-upstream origin packer/$tag
-  git checkout -b $current_branch
+  # git checkout -b packer/$tag
+  # git push --set-upstream origin packer/$tag
+  git checkout $current_branch
   echo -n "Pushed to remote build and packer branch"
 }
 

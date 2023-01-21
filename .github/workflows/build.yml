@@ -7,8 +7,6 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
@@ -24,7 +22,7 @@ jobs:
       uses: docker/build-push-action@v3
       with:
         context: "{{defaultContext}}:glaber-server"
-        tags: $REGISTRY/$GITHUB_REPOSITORY/$PACKAGE:{GITHUB_SHA::7}
+        tags: ghcr.io/bakaut/glaber/glaber-server:{GITHUB_SHA::7}
         build-args: GLABER_BUILD_VERSION=$GLABER_BUILD_VERSION
         push: true
         cache-to: |
@@ -177,3 +175,5 @@ jobs:
                       $REGISTRY/$GITHUB_REPOSITORY/glaber-server:{GITHUB_SHA::7}-cache \
                       $REGISTRY/$GITHUB_REPOSITORY/glaber-nginx:{GITHUB_SHA::7} \
                       $REGISTRY/$GITHUB_REPOSITORY/glaber-nginx:{GITHUB_SHA::7}-cache || true
+      env:
+        REGISTRY: docker.pkg.github.com
