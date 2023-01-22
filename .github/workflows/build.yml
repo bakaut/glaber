@@ -11,27 +11,29 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Set variables
+    - name: Prepare variables
       run: |
-        echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-8)" >> $GITHUB_ENV
-        echo "GLABER_BUILD_VERSION=$(cat glaber.version)" >> $GITHUB_ENV
+        SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-8)
+        GLABER_BUILD_VERSION=$(cat glaber.version)
+        echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV
+        echo "GLABER_BUILD_VERSION=$GLABER_BUILD_VERSION" >> $GITHUB_ENV
         echo "TMG_TAG=$GLABER_BUILD_VERSION-$SHORT_SHA" >> $GITHUB_ENV
 
     - name: Build temp glaber-server image
       id: glaber-server
       run: |
-        BASE_IMAGE="$REGISTRY/$GITHUB_REPOSITORY/$GITHUB_ACTION"
+        BASE_IMAGE="$REGISTRY/$GITHUB_REPOSITORY/$GITHUB_JOB"
         TMP_IMAGE="$BASE_IMAGE:$TMG_TAG"
-        cd $GITHUB_ACTION
+        cd $GITHUB_JOB
         docker build . -t $TMP_IMAGE --build-arg GLABER_BUILD_VERSION=$GLABER_BUILD_VERSION
         docker push $TMP_IMAGE
 
     - name: Build temp glaber-nginx image
       id: glaber-nginx
       run: |
-        BASE_IMAGE="$REGISTRY/$GITHUB_REPOSITORY/$GITHUB_ACTION"
+        BASE_IMAGE="$REGISTRY/$GITHUB_REPOSITORY/$GITHUB_JOB"
         TMP_IMAGE="$BASE_IMAGE:$TMG_TAG"
-        cd $GITHUB_ACTION
+        cd $GITHUB_JOB
         docker build . -t $TMP_IMAGE --build-arg GLABER_BUILD_VERSION=$GLABER_BUILD_VERSION
         docker push $TMP_IMAGE
 
