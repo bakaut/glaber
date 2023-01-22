@@ -1,13 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
-export GLABER_BUILD_VERSION=$(cat glaber.version)
-export args=" --build-arg GLABER_BUILD_VERSION=$GLABER_BUILD_VERSION"
-# export ZBX_PORT=8050
-
+# functions
 apitest () {
   info "Install hurl for testing glaber"
-  HURL_VERSION="1.8.0"
   [ -d ".tmp/hurl-$HURL_VERSION" ] || \
   curl -sL https://github.com/Orange-OpenSource/hurl/releases/download/\
 $HURL_VERSION/hurl-$HURL_VERSION-x86_64-linux.tar.gz | \
@@ -18,7 +14,6 @@ $HURL_VERSION/hurl-$HURL_VERSION-x86_64-linux.tar.gz | \
     --retry --retry-max-count 20 --retry-interval 15000 \
     .github/workflows/test/glaber-runing.hurl
 }
-
 diag () {
   info "Collect glaber logs"
   docker-compose logs --no-color clickhouse > .tmp/diag/clickhouse.log || true
@@ -45,7 +40,6 @@ git-reset-variables-files () {
   git checkout HEAD -- clickhouse/users.xml
   git checkout HEAD -- .env
 }
-
 info () {
   local message=$1
   echo $(date --rfc-3339=seconds) $message
@@ -56,9 +50,8 @@ wait () {
   info "Zabbix start failed.Timeout 5 minutes reached" \
   info "Please try to open zabbix url with credentials:" \
   info "$(cat .zbxweb)" \
-  info "If not success, please run diagnostics ./glaber.sh diag" 
+  info "If not success, please run diagnostics ./glaber.sh diag"
 }
-
 set-passwords() {
   gen-password() {
     < /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c12
@@ -94,8 +87,6 @@ set-passwords() {
     touch .passwords.created
   fi
 }
-
-
 usage() {
   echo "Usage: $0 <action>"
   echo
@@ -106,17 +97,6 @@ usage() {
   echo "$0 remote   - Remote rebuild github glaber images (only admins)"
   echo "$0 diag     - Collect glaber start and some base system info to the file"
 }
-
-[ $# -ne 1 ] && (usage && exit 1)
-
-# Check whether docker-compose is installed
-command -v docker-compose >/dev/null 2>&1 || \
-{ echo >&2 "docker-compose is required, please install it and start over. Aborting."; exit 1; }
-
-# Check whether htpasswd is installed
-command -v htpasswd >/dev/null 2>&1 || \
-{ echo >&2 "htpasswd is required(apache2-utils), please install it and start over. Aborting."; exit 1; }
-
 build() {
   [ -d "glaber-server/workers_script/" ] || mkdir -p glaber-server/workers_script/
   [ -d ".tmp/diag/" ] || mkdir -p .tmp/diag/
@@ -124,22 +104,18 @@ build() {
   sudo install -d -o 1001 -g 1001 mysql/mysql_data/
   [ -d ".clickhouse/clickhouse_data/" ] || \
   sudo install -d -o 101 -g 103 clickhouse/clickhouse_data
-  docker-compose build $args 1>.tmp/diag/docker-build.log
   docker-compose pull 1>.tmp/diag/docker-build.log
+  docker-compose build $args 1>.tmp/diag/docker-build.log
 }
-
-
 start() {
   set-passwords
   build
   docker-compose up -d
   wait
 }
-
 stop() {
   docker-compose down
 }
-
 remove() {
   docker-compose down
   read -p "Are you sure to completely remove glaber with database [y/n] ? " -n 1 -r
@@ -151,45 +127,49 @@ remove() {
     git-reset-variables-files
   fi
 }
-
 recreate() {
   remove
   start
 }
-
-remote() {
-  read -p "Are you sure than you are this repo admin [y/n] ? " -n 1 -r
-  echo
-  if [[ $REPLY =~ ^[Yy]$ ]]
-  then
-    tag=$GLABER_BUILD_VERSION-$(date '+%Y-%m-%d-%H-%M')
-    VERSION_URL="https://gitlab.com/mikler/glaber/-/raw/master/include/version.h"
-    GLABER_REPO_VERSION=$(curl -s $VERSION_URL | grep "GLABER_VERSION" | grep -Po "(\d+\.\d+\.\d+)")
-    if [[ "$GLABER_REPO_VERSION" == "$GLABER_BUILD_VERSION" ]]
-      then
-        info "No glaber build requered. Version equals"
-        read -p "Do you want to process [y/n] ? " -n 1 -r
-        if [[ $REPLY =~ ^[Yy]$ ]]
-          then
-          git-reset-variables-files
-          git checkout -b build/$tag
-          git push --set-upstream origin build/$tag
-          echo -n "Pushed to remote build branch"
-          echo ""
-        fi
-      else
-        git-reset-variables-files
-        git checkout -b build/$tag
-        echo $GLABER_REPO_VERSION > glaber.version
-        git add glaber.version
-        git commit -m "glaber version updated"
-        git push --set-upstream origin build/$tag
-        echo -n "Pushed to remote build branch"
-        echo "" 
-    fi
-  fi
+remote-docker() {
+  current_branch=$(git rev-parse --abbrev-ref HEAD)
+  tag=$GLABER_BUILD_VERSION-$(date '+%Y-%m-%d-%H-%M')
+  git-reset-variables-files
+  git add .
+  git commit -m "build auto commit"
+  git checkout -b build/$tag
+  git push --set-upstream origin build/$tag
+  git checkout $current_branch
+  echo -n "Pushed to remote build branch"
+}
+remote-packer() {
+  current_branch=$(git rev-parse --abbrev-ref HEAD)
+  tag=$GLABER_BUILD_VERSION-$(date '+%Y-%m-%d-%H-%M')
+  git-reset-variables-files
+  git add .
+  git commit -m "build auto commit"
+  git checkout -b packer/$tag
+  git push --set-upstream origin packer/$tag
+  git checkout $current_branch
+  echo -n "Pushed to remote packer branch"
 }
 
+# variables
+export GLABER_BUILD_VERSION=$(cat glaber.version)
+export args=" --build-arg GLABER_BUILD_VERSION=$GLABER_BUILD_VERSION"
+export HURL_VERSION="1.8.0"
+# export ZBX_PORT=8050
+
+# main part
+[ $# -ne 1 ] && (usage && exit 1)
+
+# Check whether docker-compose is installed
+command -v docker-compose >/dev/null 2>&1 || \
+{ echo >&2 "docker-compose is required, please install it and start over. Aborting."; exit 1; }
+
+# Check whether htpasswd is installed
+command -v htpasswd >/dev/null 2>&1 || \
+{ echo >&2 "htpasswd is required(apache2-utils), please install it and start over. Aborting."; exit 1; }
 
 case $1 in
   build)
@@ -207,8 +187,11 @@ case $1 in
   remove)
     remove
     ;;
-  remote)
-    remote   
+  remote-docker)
+    remote-docker
+    ;;
+  remote-packer)
+    remote-packer
     ;;
   diag)
     diag

@@ -7,43 +7,37 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v3
-    - name: Build glaber-server image
-      run: |
-        export DOCKER_BUILDKIT=1
-        BASE_IMAGE="$REGISTRY/$GITHUB_REPOSITORY/$PACKAGE"
-        GLABER_BUILD_VERSION=$(cat glaber.version)
-        GLABER_SERVER_LATEST=$BASE_IMAGE:latest
-        GLABER_SERVER_VERSION=$BASE_IMAGE:$GLABER_BUILD_VERSION
-        docker login $REGISTRY --username $GITHUB_ACTOR --password ${{ secrets.GITHUB_TOKEN }}
-        cd glaber-server
-        docker build . -t $GLABER_SERVER_LATEST --build-arg GLABER_BUILD_VERSION=$GLABER_BUILD_VERSION
-        docker tag $GLABER_SERVER_LATEST $GLABER_SERVER_VERSION
-        docker push $GLABER_SERVER_LATEST
-        docker push $GLABER_SERVER_VERSION
-      env:
-        REGISTRY: docker.pkg.github.com
-        PACKAGE: glaber-server
 
-    - name: Build glaber-nginx image
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Set variables
       run: |
-        export DOCKER_BUILDKIT=1
-        BASE_IMAGE="$REGISTRY/$GITHUB_REPOSITORY/$PACKAGE"
-        GLABER_BUILD_VERSION=$(cat glaber.version)
-        GLABER_NGINX_LATEST=$BASE_IMAGE:latest
-        GLABER_NGINX_VERSION=$BASE_IMAGE:$GLABER_BUILD_VERSION
-        docker login $REGISTRY --username $GITHUB_ACTOR --password ${{ secrets.GITHUB_TOKEN }}
-        cd glaber-nginx
-        docker build . -t $GLABER_NGINX_LATEST --build-arg GLABER_BUILD_VERSION=$GLABER_BUILD_VERSION
-        docker tag $GLABER_NGINX_LATEST $GLABER_NGINX_VERSION
-        docker push $GLABER_NGINX_LATEST
-        docker push $GLABER_NGINX_VERSION
-      env:
-        REGISTRY: docker.pkg.github.com
-        PACKAGE: glaber-nginx
+        echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-8)" >> $GITHUB_ENV
+        echo "GLABER_BUILD_VERSION=$(cat glaber.version)" >> $GITHUB_ENV
+        echo "TMG_TAG=$GLABER_BUILD_VERSION-$SHORT_SHA" >> $GITHUB_ENV
+
+    - name: Build temp glaber-server image
+      id: glaber-server
+      run: |
+        BASE_IMAGE="$REGISTRY/$GITHUB_REPOSITORY/$GITHUB_ACTION"
+        TMP_IMAGE="$BASE_IMAGE:$TMG_TAG"
+        cd $GITHUB_ACTION
+        docker build . -t $TMP_IMAGE --build-arg GLABER_BUILD_VERSION=$GLABER_BUILD_VERSION
+        docker push $TMP_IMAGE
+
+    - name: Build temp glaber-nginx image
+      id: glaber-nginx
+      run: |
+        BASE_IMAGE="$REGISTRY/$GITHUB_REPOSITORY/$GITHUB_ACTION"
+        TMP_IMAGE="$BASE_IMAGE:$TMG_TAG"
+        cd $GITHUB_ACTION
+        docker build . -t $TMP_IMAGE --build-arg GLABER_BUILD_VERSION=$GLABER_BUILD_VERSION
+        docker push $TMP_IMAGE
+
     - name: Test glaber start
       run: |
-        export DOCKER_BUILDKIT=1
         sudo apt-get update
         sudo apt-get install -y apache2-utils
+        export GLABER_BUILD_VERSION=$TMG_TAG
         ./glaber.sh start
