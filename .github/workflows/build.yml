@@ -22,18 +22,18 @@ jobs:
     - name: Build temp glaber-server image
       id: glaber-server
       run: |
-        BASE_IMAGE="$REGISTRY/$GITHUB_REPOSITORY/$GITHUB_JOB"
+        BASE_IMAGE="$REGISTRY/$GITHUB_REPOSITORY/glaber-server"
         TMP_IMAGE="$BASE_IMAGE:$TMG_TAG"
-        cd $GITHUB_JOB
+        cd glaber-server
         docker build . -t $TMP_IMAGE --build-arg GLABER_BUILD_VERSION=$GLABER_BUILD_VERSION
         docker push $TMP_IMAGE
 
     - name: Build temp glaber-nginx image
       id: glaber-nginx
       run: |
-        BASE_IMAGE="$REGISTRY/$GITHUB_REPOSITORY/$GITHUB_JOB"
+        BASE_IMAGE="$REGISTRY/$GITHUB_REPOSITORY/glaber-nginx"
         TMP_IMAGE="$BASE_IMAGE:$TMG_TAG"
-        cd $GITHUB_JOB
+        cd glaber-nginx
         docker build . -t $TMP_IMAGE --build-arg GLABER_BUILD_VERSION=$GLABER_BUILD_VERSION
         docker push $TMP_IMAGE
 
