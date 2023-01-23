@@ -21,8 +21,6 @@ jobs:
           echo "TAG=$GLABER_BUILD_VERSION-pkr" >> $GITHUB_ENV
           echo "REGISTRY=ghcr.io" >> $GITHUB_ENV
           echo "DOCKER_USERNAME=$GITHUB_ACTOR" >> $GITHUB_ENV
-          echo "DOCKER_PASSWORD=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
-          echo "PACKER_GITHUB_API_TOKEN=${{ secrets.PACKER_TOKEN }}  >> $GITHUB_ENV
 
       - name: Setup `packer`
         uses: hashicorp/setup-packer@main
@@ -46,6 +44,7 @@ jobs:
       - name: Run `packer build`
         id: build
         run: |
+          export DOCKER_PASSWORD=${{ secrets.GITHUB_TOKEN }}
           cd .github/workflows/build/docker
           packer build .
 
