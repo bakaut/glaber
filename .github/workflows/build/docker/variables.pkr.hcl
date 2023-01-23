@@ -5,7 +5,12 @@ variable "glaber_build_version" {
 
 variable "registry" {
   type    = string
-  default = "docker.pkg.github.com"
+  default = "${env("REGISTRY")}"
+}
+
+variable "short_sha" {
+  type    = string
+  default = "${env("SHORT_SHA")}"
 }
 
 variable "registry_user" {
@@ -37,4 +42,5 @@ variable "glaber_web_name" {
 locals {
   glaber_server_repo = "${var.registry}/${var.github_repository}/${var.glaber_server_name}"
   glaber_web_repo    = "${var.registry}/${var.github_repository}/${var.glaber_web_name}"
+  tmp_tag            = "${var.glaber_build_version}-pkr-${var.short_sha}"
 }

@@ -53,7 +53,7 @@ build {
   post-processors {
     post-processor "docker-tag" {
       repository = "${local.glaber_web_repo}"
-      tags       = ["${var.glaber_build_version}-pkr", "latest-pkr"]
+      tags       = ["${local.tmp_tag}"]
     }
     post-processor "docker-push" {
       login          = true
@@ -63,6 +63,3 @@ build {
     }
   }
 }
-
-
-
