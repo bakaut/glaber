@@ -65,7 +65,8 @@ jobs:
                        -t $BASE_IMAGE:latest \
                        --cache-from $BASE_IMAGE:$TMG_TAG \
                        --build-arg GLABER_BUILD_VERSION=$GLABER_BUILD_VERSION
-        docker push $BASE_IMAGE:latest $BASE_IMAGE:$GLABER_BUILD_VERSION
+        docker push $BASE_IMAGE:latest
+        docker push $BASE_IMAGE:$GLABER_BUILD_VERSION
         docker rmi -f $BASE_IMAGE:$TMG_TAG
 
     - name: Release glaber-nginx image
@@ -78,5 +79,6 @@ jobs:
                        -t $BASE_IMAGE:latest \
                        --cache-from $BASE_IMAGE:$TMG_TAG \
                        --build-arg GLABER_BUILD_VERSION=$GLABER_BUILD_VERSION
-        docker push $BASE_IMAGE:latest $BASE_IMAGE:$GLABER_BUILD_VERSION
+        docker push $BASE_IMAGE:latest
+        docker push $BASE_IMAGE:$GLABER_BUILD_VERSION
         docker rmi -f $BASE_IMAGE:$TMG_TAG
