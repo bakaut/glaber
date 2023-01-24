@@ -68,7 +68,6 @@ jobs:
                        --build-arg GLABER_BUILD_VERSION=$GLABER_BUILD_VERSION
         docker push $BASE_IMAGE:latest
         docker push $BASE_IMAGE:$GLABER_BUILD_VERSION
-        docker rmi -f $BASE_IMAGE:$TMG_TAG
 
     - name: Release glaber-nginx image
       id: glaber-nginx-release
@@ -82,4 +81,20 @@ jobs:
                        --build-arg GLABER_BUILD_VERSION=$GLABER_BUILD_VERSION
         docker push $BASE_IMAGE:latest
         docker push $BASE_IMAGE:$GLABER_BUILD_VERSION
-        docker rmi -f $BASE_IMAGE:$TMG_TAG
+
+    - name: Clean container registry tag
+      run: |
+        curl -L https://github.com/regclient/regclient/releases/latest/download/regctl-linux-amd64 > regctl
+        mv regctl /usr/local/bin/
+        chmod 755 /usr/local/bin/regctl
+        regctl registry login $REGISTRY \
+               -u $GITHUB_ACTOR \
+               -p ${{ secrets.GITHUB_TOKEN }}
+        APP_NAME=glaber-nginx
+        BASE_IMAGE="$REGISTRY/$GITHUB_REPOSITORY/$APP_NAME"
+        TMP_IMAGE=$BASE_IMAGE:$TMG_TAG
+        regctl tag rm $TMP_IMAGE
+        APP_NAME=glaber-nginx
+        BASE_IMAGE="$REGISTRY/$GITHUB_REPOSITORY/$APP_NAME"
+        TMP_IMAGE=$BASE_IMAGE:$TMG_TAG
+        regctl tag rm $TMP_IMAGE
