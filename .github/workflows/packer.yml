@@ -1,0 +1,74 @@
+name: Docker build images with packer
+on:
+  push:
+    branches:
+    - 'packer/**'
+jobs:
+  packer:
+    runs-on: ubuntu-22.04
+    name: Run Packer docker build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Prepare variables
+        run: |
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-8)
+          GLABER_BUILD_VERSION=$(cat glaber.version)
+          echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV
+          echo "GLABER_BUILD_VERSION=$GLABER_BUILD_VERSION" >> $GITHUB_ENV
+          echo "TMG_TAG=$GLABER_BUILD_VERSION-pkr-$SHORT_SHA" >> $GITHUB_ENV
+          echo "TAG=$GLABER_BUILD_VERSION-pkr" >> $GITHUB_ENV
+          echo "REGISTRY=ghcr.io" >> $GITHUB_ENV
+          echo "DOCKER_USERNAME=$GITHUB_ACTOR" >> $GITHUB_ENV
+
+      - name: Setup `packer`
+        uses: hashicorp/setup-packer@main
+        id: setup
+        with:
+          version: "1.8.5"
+
+      - name: Run `packer init`
+        id: init
+        run: |
+          export PACKER_GITHUB_API_TOKEN=${{ secrets.PACKER_TOKEN }}
+          cd .github/workflows/build/docker
+          packer init .
+
+      - name: Run `packer validate`
+        id: validate
+        run: |
+          cd .github/workflows/build/docker
+          packer validate .
+
+      - name: Run `packer build`
+        id: build
+        run: |
+          export DOCKER_PASSWORD=${{ secrets.GITHUB_TOKEN }}
+          cd .github/workflows/build/docker
+          packer build .
+
+      - name: Testing glaber server start
+        id: test
+        run: |
+          export GLABER_BUILD_VERSION=$TMG_TAG
+          sudo apt-get update
+          sudo apt-get install -y apache2-utils
+          ./glaber.sh start
+
+      - name: Release
+        run: |
+          docker login $REGISTRY \
+                       --username $GITHUB_ACTOR \
+                       --password ${{ secrets.GITHUB_TOKEN }}
+          BASE_PATH="$REGISTRY/$GITHUB_REPOSITORY"
+
+          docker tag $BASE_PATH/glaber-server:$TMG_TAG \
+                     $BASE_PATH/glaber-server:$TAG
+          docker push $BASE_PATH/glaber-server:$TAG
+          docker rmi -f $BASE_PATH/glaber-server:$TMG_TAG
+
+          docker tag $BASE_PATH/glaber-nginx:$TMG_TAG \
+                     $BASE_PATH/glaber-nginx:$TAG
+          docker push $BASE_PATH/glaber-nginx:$TAG
+          docker rmi -f $BASE_PATH/glaber-nginx:$TMG_TAG
