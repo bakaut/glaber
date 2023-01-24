@@ -56,19 +56,26 @@ jobs:
           sudo apt-get install -y apache2-utils
           ./glaber.sh start
 
-      - name: Release
+      - name: Release glaber-server image
+        id: glaber-server-release
         run: |
-          docker login $REGISTRY \
-                       --username $GITHUB_ACTOR \
-                       --password ${{ secrets.GITHUB_TOKEN }}
-          BASE_PATH="$REGISTRY/$GITHUB_REPOSITORY"
+          APP_NAME=glaber-server
+          BASE_IMAGE="$REGISTRY/$GITHUB_REPOSITORY/$APP_NAME"
+          cd $APP_NAME
+          docker build . -t $BASE_IMAGE:$TAG \
+                         --cache-from $BASE_IMAGE:$TMG_TAG \
+                         --build-arg GLABER_BUILD_VERSION=$GLABER_BUILD_VERSION
+          docker push $BASE_IMAGE:$TAG
+          docker rmi -f $BASE_IMAGE:$TMG_TAG
 
-          docker tag $BASE_PATH/glaber-server:$TMG_TAG \
-                     $BASE_PATH/glaber-server:$TAG
-          docker push $BASE_PATH/glaber-server:$TAG
-          docker rmi -f $BASE_PATH/glaber-server:$TMG_TAG
-
-          docker tag $BASE_PATH/glaber-nginx:$TMG_TAG \
-                     $BASE_PATH/glaber-nginx:$TAG
-          docker push $BASE_PATH/glaber-nginx:$TAG
-          docker rmi -f $BASE_PATH/glaber-nginx:$TMG_TAG
+      - name: Release glaber-nginx image
+        id: glaber-nginx-release
+        run: |
+          APP_NAME=glaber-nginx
+          BASE_IMAGE="$REGISTRY/$GITHUB_REPOSITORY/$APP_NAME"
+          cd $APP_NAME
+          docker build . -t $BASE_IMAGE:$TAG \
+                        --cache-from $BASE_IMAGE:$TMG_TAG \
+                        --build-arg GLABER_BUILD_VERSION=$GLABER_BUILD_VERSION
+          docker push $BASE_IMAGE:$TAG
+          docker rmi -f $BASE_IMAGE:$TMG_TAG
