@@ -13,4 +13,7 @@ jobs:
         docker login ghcr.io \
                       --username $GITHUB_ACTOR \
                       --password ${{ secrets.GITHUB_TOKEN }}
-        docker images
+        curl -L https://github.com/regclient/regclient/releases/latest/download/regctl-linux-amd64 > regctl
+        mv regctl /usr/local/bin/
+        chmod 755 /usr/local/bin/regctl
+        regctl tag ls ghcr.io/bakaut/glaber/
