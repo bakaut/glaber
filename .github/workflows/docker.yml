@@ -56,10 +56,19 @@ jobs:
           sudo apt-get install -y apache2-utils
           ./glaber.sh start
 
-#      - name: Release and clean
-#        run: |
-#          docker login
-#          docker tag
-#          docker push
-#          docker rmi -f zabbix server TMP_TAG
-#          docker rmi -f zabbix nginx TMP_TAG
+      - name: Release
+        run: |
+          docker login $REGISTRY \
+                       --username $GITHUB_ACTOR \
+                       --password ${{ secrets.GITHUB_TOKEN }}
+          BASE_PATH="$REGISTRY/$GITHUB_REPOSITORY"
+          docker tag $BASE_PATH/glaber-server:$TMG_TAG \
+                     $BASE_PATH/glaber-server:$TAG
+          docker push $BASE_PATH/glaber-server:$TAG
+          docker rmi -f $BASE_PATH/glaber-server:$TMG_TAG
+
+          BASE_PATH="$REGISTRY/$GITHUB_REPOSITORY"
+          docker tag $BASE_PATH/glaber-nginx:$TMG_TAG \
+                     $BASE_PATH/glaber-nginx:$TAG
+          docker push $BASE_PATH/glaber-nginx:$TAG
+          docker rmi -f $BASE_PATH/glaber-nginx:$TMG_TAG
