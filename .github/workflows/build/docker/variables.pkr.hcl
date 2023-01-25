@@ -8,11 +8,6 @@ variable "registry" {
   default = "${env("REGISTRY")}"
 }
 
-variable "short_sha" {
-  type    = string
-  default = "${env("SHORT_SHA")}"
-}
-
 variable "registry_user" {
   type    = string
   default = "${env("GITHUB_ACTOR")}"
@@ -39,8 +34,13 @@ variable "glaber_web_name" {
   default = "glaber-nginx"
 }
 
+variable "tag_version" {
+  type    = string
+  default = "-pkr"
+}
+
 locals {
   glaber_server_repo = "${var.registry}/${var.github_repository}/${var.glaber_server_name}"
   glaber_web_repo    = "${var.registry}/${var.github_repository}/${var.glaber_web_name}"
-  tmp_tag            = "${var.glaber_build_version}-pkr-${var.short_sha}"
+  tag            = "${var.glaber_build_version}${var.tag_version}"
 }

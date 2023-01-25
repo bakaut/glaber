@@ -53,7 +53,7 @@ build {
   post-processors {
     post-processor "docker-tag" {
       repository = "${local.glaber_web_repo}"
-      tags       = ["${local.tmp_tag}"]
+      tags       = ["${local.tag}"]
     }
     post-processor "docker-push" {
       login          = true
