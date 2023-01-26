@@ -52,7 +52,7 @@ jobs:
       - name: Testing glaber server start
         id: test
         run: |
-          export GLABER_BUILD_VERSION=$TMG_TAG
+          export GLABER_TAG=$TMG_TAG
           sudo apt-get update
           sudo apt-get install -y apache2-utils
           ./glaber.sh start
