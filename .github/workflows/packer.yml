@@ -44,7 +44,7 @@ jobs:
         id: build
         run: |
           cd .github/workflows/build/docker
-          packer build -var "tag_version=-pkr-temp \
+          packer build -var "tag_version=-pkr-temp" \
                  -color=false -timestamp-ui \
                  -warn-on-undeclared-var .
 
