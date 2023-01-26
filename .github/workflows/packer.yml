@@ -43,6 +43,7 @@ jobs:
       - name: Run `packer build`
         id: build
         run: |
+          export DOCKER_PASSWORD=${{ secrets.GITHUB_TOKEN }}
           cd .github/workflows/build/docker
           packer build -var "tag_version=-pkr-temp" \
                  -color=false -timestamp-ui \
