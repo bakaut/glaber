@@ -62,5 +62,5 @@ jobs:
         run: |
           export DOCKER_PASSWORD=${{ secrets.GITHUB_TOKEN }}
           cd .github/workflows/build/docker
-          packer build -color=false -timestamp-ui" \
+          packer build -color=false -timestamp-ui \
                  -warn-on-undeclared-var .
