@@ -28,7 +28,7 @@ This setup is enough for zabbix setup with 20k nvps performance.
 # Software requirements:
 
 Linux operation system with internet access and software installed:
-- docker >=20.10.22 
+- docker >=20.10.22
 - docker-compose >=1.29.2
 - apache2-utils
 
