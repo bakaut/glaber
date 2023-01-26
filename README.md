@@ -92,7 +92,7 @@ All variables, their default values and their default behavior are described in 
 
 - Community support (feel free to make an [issue](https://github.com/bakaut/glaber/issues/new) or write to the telegram group https://t.me/glaber_group)
 - Supported software version:
-  - Only one last version. Currently 2.18.0 for glaber based on zabbix 5.4.11
+  - Only one last version. Currently 2.18.1 for glaber based on zabbix 5.4.11
     - glaber-server-mysql
     - glaber-nginx
     - clickhouse-server, docker image version 21.3.20
