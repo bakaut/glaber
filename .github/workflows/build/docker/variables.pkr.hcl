@@ -42,5 +42,5 @@ variable "tag_version" {
 locals {
   glaber_server_repo = "${var.registry}/${var.github_repository}/${var.glaber_server_name}"
   glaber_web_repo    = "${var.registry}/${var.github_repository}/${var.glaber_web_name}"
-  tag            = "${var.glaber_build_version}${var.tag_version}"
+  tag                = "${var.glaber_build_version}${var.tag_version}"
 }
