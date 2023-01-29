@@ -10,7 +10,7 @@ RUN apt-get update && \
     echo "deb [arch=amd64] https://glaber.io/repo-testing/debian $(lsb_release -sc) main" >> /etc/apt/sources.list.d/glaber.list && \
     apt-get update && \
     apt-cache show glaber-server-mysql && \
-    apt-get install -y glaber-server-mysql=*$GLABER_BUILD_VERSION* && \
+    apt-get install -y glaber-server-mysql=1:$GLABER_BUILD_VERSION* && \
     rm -rf /var/lib/{apt,dpkg,cache,log}/ && \
     apt-get autoremove --yes && \
     apt-get clean autoclean && \
