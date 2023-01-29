@@ -13,7 +13,7 @@ RUN apt-get update && \
     wget -qO - https://nginx.org/keys/nginx_signing.key | apt-key add - && \
     echo "deb [arch=amd64] https://glaber.io/repo/debian $(lsb_release -sc) main" >> /etc/apt/sources.list.d/glaber.list && \
     apt-get update && \
-    apt-cache search glaber && \
+    apt-cache show glaber-nginx-conf && \
     apt-get install -y glaber-nginx-conf=*$GLABER_BUILD_VERSION* && \
     rm -rf /var/lib/{apt,dpkg,cache,log}/ && \
     apt-get autoremove --yes && \
