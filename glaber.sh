@@ -49,7 +49,7 @@ wait () {
   apitest && info "Success" && info "$(cat .zbxweb)" || \
   info "Zabbix start failed.Timeout 5 minutes reached" && \
   info "Please try to open zabbix url with credentials:" && \
-  info "$(cat .zbxweb)" \
+  info "$(cat .zbxweb)"  && \
   info "If not success, please run diagnostics ./glaber.sh diag" && \
   exit 1
 }
@@ -106,7 +106,7 @@ build() {
   [ -d ".clickhouse/clickhouse_data/" ] || \
   sudo install -d -o 101 -g 103 clickhouse/clickhouse_data
   docker-compose pull 1>.tmp/diag/docker-build.log
-  docker-compose build $args 1>.tmp/diag/docker-build.log
+  docker-compose build 1>.tmp/diag/docker-build.log
 }
 start() {
   set-passwords
@@ -156,8 +156,7 @@ remote-packer() {
 }
 
 # variables
-export GLABER_BUILD_VERSION=$(cat glaber.version)
-export args=" --build-arg GLABER_BUILD_VERSION=$GLABER_BUILD_VERSION"
+export GLABER_TAG=$(cat glaber.version)
 export HURL_VERSION="1.8.0"
 # export ZBX_PORT=8050
 
