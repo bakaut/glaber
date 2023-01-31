@@ -47,10 +47,11 @@ info () {
 wait () {
   info "Waiting zabbix to start..."
   apitest && info "Success" && info "$(cat .zbxweb)" || \
-  info "Zabbix start failed.Timeout 5 minutes reached" \
-  info "Please try to open zabbix url with credentials:" \
+  info "Zabbix start failed.Timeout 5 minutes reached" && \
+  info "Please try to open zabbix url with credentials:" && \
   info "$(cat .zbxweb)" \
-  info "If not success, please run diagnostics ./glaber.sh diag"
+  info "If not success, please run diagnostics ./glaber.sh diag" && \
+  exit 1
 }
 set-passwords() {
   gen-password() {
