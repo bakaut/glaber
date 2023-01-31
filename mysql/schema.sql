@@ -12,7 +12,7 @@ CREATE TABLE `users` (
 	`name`                   varchar(100)    DEFAULT ''                NOT NULL,
 	`surname`                varchar(100)    DEFAULT ''                NOT NULL,
 	`passwd`                 varchar(60)     DEFAULT ''                NOT NULL,
-	`url`                    varchar(255)    DEFAULT ''                NOT NULL,
+	`url`                    varchar(2048)   DEFAULT ''                NOT NULL,
 	`autologin`              integer         DEFAULT '0'               NOT NULL,
 	`autologout`             varchar(32)     DEFAULT '15m'             NOT NULL,
 	`lang`                   varchar(7)      DEFAULT 'default'         NOT NULL,
@@ -44,7 +44,6 @@ CREATE TABLE `hosts` (
 	`proxy_hostid`           bigint unsigned                           NULL,
 	`host`                   varchar(128)    DEFAULT ''                NOT NULL,
 	`status`                 integer         DEFAULT '0'               NOT NULL,
-	`lastaccess`             integer         DEFAULT '0'               NOT NULL,
 	`ipmi_authtype`          integer         DEFAULT '-1'              NOT NULL,
 	`ipmi_privilege`         integer         DEFAULT '2'               NOT NULL,
 	`ipmi_username`          varchar(16)     DEFAULT ''                NOT NULL,
@@ -78,12 +77,12 @@ CREATE INDEX `hosts_5` ON `hosts` (`maintenanceid`);
 CREATE TABLE `hstgrp` (
 	`groupid`                bigint unsigned                           NOT NULL,
 	`name`                   varchar(255)    DEFAULT ''                NOT NULL,
-	`internal`               integer         DEFAULT '0'               NOT NULL,
 	`flags`                  integer         DEFAULT '0'               NOT NULL,
 	`uuid`                   varchar(32)     DEFAULT ''                NOT NULL,
+	`type`                   integer         DEFAULT '0'               NOT NULL,
 	PRIMARY KEY (groupid)
 ) ENGINE=InnoDB;
-CREATE INDEX `hstgrp_1` ON `hstgrp` (`name`);
+CREATE UNIQUE INDEX `hstgrp_1` ON `hstgrp` (`type`,`name`);
 CREATE TABLE `group_prototype` (
 	`group_prototypeid`      bigint unsigned                           NOT NULL,
 	`hostid`                 bigint unsigned                           NOT NULL,
@@ -96,7 +95,7 @@ CREATE INDEX `group_prototype_1` ON `group_prototype` (`hostid`);
 CREATE TABLE `group_discovery` (
 	`groupid`                bigint unsigned                           NOT NULL,
 	`parent_group_prototypeid` bigint unsigned                           NOT NULL,
-	`name`                   varchar(64)     DEFAULT ''                NOT NULL,
+	`name`                   varchar(255)    DEFAULT ''                NOT NULL,
 	`lastcheck`              integer         DEFAULT '0'               NOT NULL,
 	`ts_delete`              integer         DEFAULT '0'               NOT NULL,
 	PRIMARY KEY (groupid)
@@ -107,7 +106,6 @@ CREATE TABLE `drules` (
 	`name`                   varchar(255)    DEFAULT ''                NOT NULL,
 	`iprange`                varchar(2048)   DEFAULT ''                NOT NULL,
 	`delay`                  varchar(255)    DEFAULT '1h'              NOT NULL,
-	`nextcheck`              integer         DEFAULT '0'               NOT NULL,
 	`status`                 integer         DEFAULT '0'               NOT NULL,
 	PRIMARY KEY (druleid)
 ) ENGINE=InnoDB;
@@ -136,7 +134,6 @@ CREATE INDEX `dchecks_1` ON `dchecks` (`druleid`,`host_source`,`name_source`);
 CREATE TABLE `httptest` (
 	`httptestid`             bigint unsigned                           NOT NULL,
 	`name`                   varchar(64)     DEFAULT ''                NOT NULL,
-	`nextcheck`              integer         DEFAULT '0'               NOT NULL,
 	`delay`                  varchar(255)    DEFAULT '1m'              NOT NULL,
 	`status`                 integer         DEFAULT '0'               NOT NULL,
 	`agent`                  varchar(255)    DEFAULT 'Zabbix'          NOT NULL,
@@ -255,13 +252,13 @@ CREATE TABLE `items` (
 	`uuid`                   varchar(32)     DEFAULT ''                NOT NULL,
 	PRIMARY KEY (itemid)
 ) ENGINE=InnoDB;
-CREATE INDEX `items_1` ON `items` (`hostid`,`key_`(1021));
+CREATE INDEX `items_1` ON `items` (`hostid`,`key_`(764));
 CREATE INDEX `items_3` ON `items` (`status`);
 CREATE INDEX `items_4` ON `items` (`templateid`);
 CREATE INDEX `items_5` ON `items` (`valuemapid`);
 CREATE INDEX `items_6` ON `items` (`interfaceid`);
 CREATE INDEX `items_7` ON `items` (`master_itemid`);
-CREATE INDEX `items_8` ON `items` (`key_`(1024));
+CREATE INDEX `items_8` ON `items` (`key_`(768));
 CREATE TABLE `httpstepitem` (
 	`httpstepitemid`         bigint unsigned                           NOT NULL,
 	`httpstepid`             bigint unsigned                           NOT NULL,
@@ -291,7 +288,7 @@ CREATE TABLE `media_type` (
 	`gsm_modem`              varchar(255)    DEFAULT ''                NOT NULL,
 	`username`               varchar(255)    DEFAULT ''                NOT NULL,
 	`passwd`                 varchar(255)    DEFAULT ''                NOT NULL,
-	`status`                 integer         DEFAULT '0'               NOT NULL,
+	`status`                 integer         DEFAULT '1'               NOT NULL,
 	`smtp_port`              integer         DEFAULT '25'              NOT NULL,
 	`smtp_security`          integer         DEFAULT '0'               NOT NULL,
 	`smtp_verify_peer`       integer         DEFAULT '0'               NOT NULL,
@@ -309,6 +306,7 @@ CREATE TABLE `media_type` (
 	`event_menu_url`         varchar(2048)   DEFAULT ''                NOT NULL,
 	`event_menu_name`        varchar(255)    DEFAULT ''                NOT NULL,
 	`description`            text                                      NOT NULL,
+	`provider`               integer         DEFAULT '0'               NOT NULL,
 	PRIMARY KEY (mediatypeid)
 ) ENGINE=InnoDB;
 CREATE UNIQUE INDEX `media_type_1` ON `media_type` (`name`);
@@ -336,9 +334,11 @@ CREATE TABLE `usrgrp` (
 	`gui_access`             integer         DEFAULT '0'               NOT NULL,
 	`users_status`           integer         DEFAULT '0'               NOT NULL,
 	`debug_mode`             integer         DEFAULT '0'               NOT NULL,
+	`userdirectoryid`        bigint unsigned DEFAULT NULL              NULL,
 	PRIMARY KEY (usrgrpid)
 ) ENGINE=InnoDB;
 CREATE UNIQUE INDEX `usrgrp_1` ON `usrgrp` (`name`);
+CREATE INDEX `usrgrp_2` ON `usrgrp` (`userdirectoryid`);
 CREATE TABLE `users_groups` (
 	`id`                     bigint unsigned                           NOT NULL,
 	`usrgrpid`               bigint unsigned                           NOT NULL,
@@ -367,6 +367,8 @@ CREATE TABLE `scripts` (
 	`publickey`              varchar(64)     DEFAULT ''                NOT NULL,
 	`privatekey`             varchar(64)     DEFAULT ''                NOT NULL,
 	`menu_path`              varchar(255)    DEFAULT ''                NOT NULL,
+	`url`                    varchar(2048)   DEFAULT ''                NOT NULL,
+	`new_window`             integer         DEFAULT '1'               NOT NULL,
 	PRIMARY KEY (scriptid)
 ) ENGINE=InnoDB;
 CREATE INDEX `scripts_1` ON `scripts` (`usrgrpid`);
@@ -387,8 +389,9 @@ CREATE TABLE `actions` (
 	`evaltype`               integer         DEFAULT '0'               NOT NULL,
 	`status`                 integer         DEFAULT '0'               NOT NULL,
 	`esc_period`             varchar(255)    DEFAULT '1h'              NOT NULL,
-	`formula`                varchar(255)    DEFAULT ''                NOT NULL,
+	`formula`                varchar(1024)   DEFAULT ''                NOT NULL,
 	`pause_suppressed`       integer         DEFAULT '1'               NOT NULL,
+	`notify_if_canceled`     integer         DEFAULT '1'               NOT NULL,
 	PRIMARY KEY (actionid)
 ) ENGINE=InnoDB;
 CREATE INDEX `actions_1` ON `actions` (`eventsource`,`status`);
@@ -493,13 +496,7 @@ CREATE TABLE `config` (
 	`alert_usrgrpid`         bigint unsigned                           NULL,
 	`default_theme`          varchar(128)    DEFAULT 'blue-theme'      NOT NULL,
 	`authentication_type`    integer         DEFAULT '0'               NOT NULL,
-	`ldap_host`              varchar(255)    DEFAULT ''                NOT NULL,
-	`ldap_port`              integer         DEFAULT 389               NOT NULL,
-	`ldap_base_dn`           varchar(255)    DEFAULT ''                NOT NULL,
-	`ldap_bind_dn`           varchar(255)    DEFAULT ''                NOT NULL,
-	`ldap_bind_password`     varchar(128)    DEFAULT ''                NOT NULL,
-	`ldap_search_attribute`  varchar(128)    DEFAULT ''                NOT NULL,
-	`discovery_groupid`      bigint unsigned                           NOT NULL,
+	`discovery_groupid`      bigint unsigned                           NULL,
 	`max_in_table`           integer         DEFAULT '50'              NOT NULL,
 	`search_limit`           integer         DEFAULT '1000'            NOT NULL,
 	`severity_color_0`       varchar(6)      DEFAULT '97AAB3'          NOT NULL,
@@ -571,7 +568,7 @@ CREATE TABLE `config` (
 	`saml_encrypt_nameid`    integer         DEFAULT '0'               NOT NULL,
 	`saml_encrypt_assertions` integer         DEFAULT '0'               NOT NULL,
 	`saml_case_sensitive`    integer         DEFAULT '0'               NOT NULL,
-	`default_lang`           varchar(5)      DEFAULT 'en_GB'           NOT NULL,
+	`default_lang`           varchar(5)      DEFAULT 'en_US'           NOT NULL,
 	`default_timezone`       varchar(50)     DEFAULT 'system'          NOT NULL,
 	`login_attempts`         integer         DEFAULT '5'               NOT NULL,
 	`login_block`            varchar(32)     DEFAULT '30s'             NOT NULL,
@@ -593,16 +590,29 @@ CREATE TABLE `config` (
 	`session_key`            varchar(32)     DEFAULT ''                NOT NULL,
 	`url`                    varchar(255)    DEFAULT ''                NOT NULL,
 	`report_test_timeout`    varchar(32)     DEFAULT '60s'             NOT NULL,
-	`dbversion_status`       varchar(1024)   DEFAULT ''                NOT NULL,
+	`dbversion_status`       text                                      NOT NULL,
+	`hk_events_service`      varchar(32)     DEFAULT '1d'              NOT NULL,
+	`passwd_min_length`      integer         DEFAULT '8'               NOT NULL,
+	`passwd_check_rules`     integer         DEFAULT '8'               NOT NULL,
+	`auditlog_enabled`       integer         DEFAULT '1'               NOT NULL,
+	`ha_failover_delay`      varchar(32)     DEFAULT '1m'              NOT NULL,
+	`geomaps_tile_provider`  varchar(255)    DEFAULT ''                NOT NULL,
+	`geomaps_tile_url`       varchar(1024)   DEFAULT ''                NOT NULL,
+	`geomaps_max_zoom`       integer         DEFAULT '0'               NOT NULL,
+	`geomaps_attribution`    varchar(1024)   DEFAULT ''                NOT NULL,
+	`vault_provider`         integer         DEFAULT '0'               NOT NULL,
+	`ldap_userdirectoryid`   bigint unsigned DEFAULT NULL              NULL,
+	`server_status`          text                                      NOT NULL,
 	PRIMARY KEY (configid)
 ) ENGINE=InnoDB;
 CREATE INDEX `config_1` ON `config` (`alert_usrgrpid`);
 CREATE INDEX `config_2` ON `config` (`discovery_groupid`);
+CREATE INDEX `config_3` ON `config` (`ldap_userdirectoryid`);
 CREATE TABLE `triggers` (
 	`triggerid`              bigint unsigned                           NOT NULL,
 	`expression`             varchar(2048)   DEFAULT ''                NOT NULL,
 	`description`            varchar(255)    DEFAULT ''                NOT NULL,
-	`url`                    varchar(255)    DEFAULT ''                NOT NULL,
+	`url`                    varchar(2048)   DEFAULT ''                NOT NULL,
 	`status`                 integer         DEFAULT '0'               NOT NULL,
 	`value`                  integer         DEFAULT '0'               NOT NULL,
 	`priority`               integer         DEFAULT '0'               NOT NULL,
@@ -622,6 +632,7 @@ CREATE TABLE `triggers` (
 	`discover`               integer         DEFAULT '0'               NOT NULL,
 	`event_name`             varchar(2048)   DEFAULT ''                NOT NULL,
 	`uuid`                   varchar(32)     DEFAULT ''                NOT NULL,
+	`url_name`               varchar(64)     DEFAULT ''                NOT NULL,
 	PRIMARY KEY (triggerid)
 ) ENGINE=InnoDB;
 CREATE INDEX `triggers_1` ON `triggers` (`status`);
@@ -720,6 +731,7 @@ CREATE TABLE `hostmacro` (
 	`value`                  varchar(2048)   DEFAULT ''                NOT NULL,
 	`description`            text                                      NOT NULL,
 	`type`                   integer         DEFAULT '0'               NOT NULL,
+	`automatic`              integer         DEFAULT '0'               NOT NULL,
 	PRIMARY KEY (hostmacroid)
 ) ENGINE=InnoDB;
 CREATE UNIQUE INDEX `hostmacro_1` ON `hostmacro` (`hostid`,`macro`);
@@ -735,6 +747,7 @@ CREATE TABLE `hosts_templates` (
 	`hosttemplateid`         bigint unsigned                           NOT NULL,
 	`hostid`                 bigint unsigned                           NOT NULL,
 	`templateid`             bigint unsigned                           NOT NULL,
+	`link_type`              integer         DEFAULT '0'               NOT NULL,
 	PRIMARY KEY (hosttemplateid)
 ) ENGINE=InnoDB;
 CREATE UNIQUE INDEX `hosts_templates_1` ON `hosts_templates` (`hostid`,`templateid`);
@@ -773,34 +786,25 @@ CREATE INDEX `rights_2` ON `rights` (`id`);
 CREATE TABLE `services` (
 	`serviceid`              bigint unsigned                           NOT NULL,
 	`name`                   varchar(128)    DEFAULT ''                NOT NULL,
-	`status`                 integer         DEFAULT '0'               NOT NULL,
+	`status`                 integer         DEFAULT '-1'              NOT NULL,
 	`algorithm`              integer         DEFAULT '0'               NOT NULL,
-	`triggerid`              bigint unsigned                           NULL,
-	`showsla`                integer         DEFAULT '0'               NOT NULL,
-	`goodsla`                DOUBLE PRECISION DEFAULT '99.9'            NOT NULL,
 	`sortorder`              integer         DEFAULT '0'               NOT NULL,
+	`weight`                 integer         DEFAULT '0'               NOT NULL,
+	`propagation_rule`       integer         DEFAULT '0'               NOT NULL,
+	`propagation_value`      integer         DEFAULT '0'               NOT NULL,
+	`description`            text                                      NOT NULL,
+	`uuid`                   varchar(32)     DEFAULT ''                NOT NULL,
+	`created_at`             integer         DEFAULT '0'               NOT NULL,
 	PRIMARY KEY (serviceid)
 ) ENGINE=InnoDB;
-CREATE INDEX `services_1` ON `services` (`triggerid`);
 CREATE TABLE `services_links` (
 	`linkid`                 bigint unsigned                           NOT NULL,
 	`serviceupid`            bigint unsigned                           NOT NULL,
 	`servicedownid`          bigint unsigned                           NOT NULL,
-	`soft`                   integer         DEFAULT '0'               NOT NULL,
 	PRIMARY KEY (linkid)
 ) ENGINE=InnoDB;
 CREATE INDEX `services_links_1` ON `services_links` (`servicedownid`);
 CREATE UNIQUE INDEX `services_links_2` ON `services_links` (`serviceupid`,`servicedownid`);
-CREATE TABLE `services_times` (
-	`timeid`                 bigint unsigned                           NOT NULL,
-	`serviceid`              bigint unsigned                           NOT NULL,
-	`type`                   integer         DEFAULT '0'               NOT NULL,
-	`ts_from`                integer         DEFAULT '0'               NOT NULL,
-	`ts_to`                  integer         DEFAULT '0'               NOT NULL,
-	`note`                   varchar(255)    DEFAULT ''                NOT NULL,
-	PRIMARY KEY (timeid)
-) ENGINE=InnoDB;
-CREATE INDEX `services_times_1` ON `services_times` (`serviceid`,`type`,`ts_from`,`ts_to`);
 CREATE TABLE `icon_map` (
 	`iconmapid`              bigint unsigned                           NOT NULL,
 	`name`                   varchar(64)     DEFAULT ''                NOT NULL,
@@ -1026,27 +1030,28 @@ CREATE INDEX `alerts_4` ON `alerts` (`status`);
 CREATE INDEX `alerts_5` ON `alerts` (`mediatypeid`);
 CREATE INDEX `alerts_6` ON `alerts` (`userid`);
 CREATE INDEX `alerts_7` ON `alerts` (`p_eventid`);
+CREATE INDEX `alerts_8` ON `alerts` (`acknowledgeid`);
 CREATE TABLE `history` (
 	`itemid`                 bigint unsigned                           NOT NULL,
 	`clock`                  integer         DEFAULT '0'               NOT NULL,
 	`value`                  DOUBLE PRECISION DEFAULT '0.0000'          NOT NULL,
-	`ns`                     integer         DEFAULT '0'               NOT NULL
+	`ns`                     integer         DEFAULT '0'               NOT NULL,
+	PRIMARY KEY (itemid,clock,ns)
 ) ENGINE=InnoDB;
-CREATE INDEX `history_1` ON `history` (`itemid`,`clock`);
 CREATE TABLE `history_uint` (
 	`itemid`                 bigint unsigned                           NOT NULL,
 	`clock`                  integer         DEFAULT '0'               NOT NULL,
 	`value`                  bigint unsigned DEFAULT '0'               NOT NULL,
-	`ns`                     integer         DEFAULT '0'               NOT NULL
+	`ns`                     integer         DEFAULT '0'               NOT NULL,
+	PRIMARY KEY (itemid,clock,ns)
 ) ENGINE=InnoDB;
-CREATE INDEX `history_uint_1` ON `history_uint` (`itemid`,`clock`);
 CREATE TABLE `history_str` (
 	`itemid`                 bigint unsigned                           NOT NULL,
 	`clock`                  integer         DEFAULT '0'               NOT NULL,
 	`value`                  varchar(255)    DEFAULT ''                NOT NULL,
-	`ns`                     integer         DEFAULT '0'               NOT NULL
+	`ns`                     integer         DEFAULT '0'               NOT NULL,
+	PRIMARY KEY (itemid,clock,ns)
 ) ENGINE=InnoDB;
-CREATE INDEX `history_str_1` ON `history_str` (`itemid`,`clock`);
 CREATE TABLE `history_log` (
 	`itemid`                 bigint unsigned                           NOT NULL,
 	`clock`                  integer         DEFAULT '0'               NOT NULL,
@@ -1055,16 +1060,16 @@ CREATE TABLE `history_log` (
 	`severity`               integer         DEFAULT '0'               NOT NULL,
 	`value`                  text                                      NOT NULL,
 	`logeventid`             integer         DEFAULT '0'               NOT NULL,
-	`ns`                     integer         DEFAULT '0'               NOT NULL
+	`ns`                     integer         DEFAULT '0'               NOT NULL,
+	PRIMARY KEY (itemid,clock,ns)
 ) ENGINE=InnoDB;
-CREATE INDEX `history_log_1` ON `history_log` (`itemid`,`clock`);
 CREATE TABLE `history_text` (
 	`itemid`                 bigint unsigned                           NOT NULL,
 	`clock`                  integer         DEFAULT '0'               NOT NULL,
 	`value`                  text                                      NOT NULL,
-	`ns`                     integer         DEFAULT '0'               NOT NULL
+	`ns`                     integer         DEFAULT '0'               NOT NULL,
+	PRIMARY KEY (itemid,clock,ns)
 ) ENGINE=InnoDB;
-CREATE INDEX `history_text_1` ON `history_text` (`itemid`,`clock`);
 CREATE TABLE `proxy_history` (
 	`id`                     bigint unsigned                           NOT NULL auto_increment,
 	`itemid`                 bigint unsigned                           NOT NULL,
@@ -1139,41 +1144,35 @@ CREATE TABLE `acknowledges` (
 	`action`                 integer         DEFAULT '0'               NOT NULL,
 	`old_severity`           integer         DEFAULT '0'               NOT NULL,
 	`new_severity`           integer         DEFAULT '0'               NOT NULL,
+	`suppress_until`         integer         DEFAULT '0'               NOT NULL,
 	PRIMARY KEY (acknowledgeid)
 ) ENGINE=InnoDB;
 CREATE INDEX `acknowledges_1` ON `acknowledges` (`userid`);
 CREATE INDEX `acknowledges_2` ON `acknowledges` (`eventid`);
 CREATE INDEX `acknowledges_3` ON `acknowledges` (`clock`);
 CREATE TABLE `auditlog` (
-	`auditid`                bigint unsigned                           NOT NULL,
-	`userid`                 bigint unsigned                           NOT NULL,
+	`auditid`                varchar(25)                               NOT NULL,
+	`userid`                 bigint unsigned                           NULL,
+	`username`               varchar(100)    DEFAULT ''                NOT NULL,
 	`clock`                  integer         DEFAULT '0'               NOT NULL,
+	`ip`                     varchar(39)     DEFAULT ''                NOT NULL,
 	`action`                 integer         DEFAULT '0'               NOT NULL,
 	`resourcetype`           integer         DEFAULT '0'               NOT NULL,
-	`note`                   varchar(128)    DEFAULT ''                NOT NULL,
-	`ip`                     varchar(39)     DEFAULT ''                NOT NULL,
 	`resourceid`             bigint unsigned                           NULL,
+	`resource_cuid`          varchar(25)                               NULL,
 	`resourcename`           varchar(255)    DEFAULT ''                NOT NULL,
+	`recordsetid`            varchar(25)                               NOT NULL,
+	`details`                longtext                                  NOT NULL,
 	PRIMARY KEY (auditid)
 ) ENGINE=InnoDB;
 CREATE INDEX `auditlog_1` ON `auditlog` (`userid`,`clock`);
 CREATE INDEX `auditlog_2` ON `auditlog` (`clock`);
 CREATE INDEX `auditlog_3` ON `auditlog` (`resourcetype`,`resourceid`);
-CREATE TABLE `auditlog_details` (
-	`auditdetailid`          bigint unsigned                           NOT NULL,
-	`auditid`                bigint unsigned                           NOT NULL,
-	`table_name`             varchar(64)     DEFAULT ''                NOT NULL,
-	`field_name`             varchar(64)     DEFAULT ''                NOT NULL,
-	`oldvalue`               text                                      NOT NULL,
-	`newvalue`               text                                      NOT NULL,
-	PRIMARY KEY (auditdetailid)
-) ENGINE=InnoDB;
-CREATE INDEX `auditlog_details_1` ON `auditlog_details` (`auditid`);
 CREATE TABLE `service_alarms` (
 	`servicealarmid`         bigint unsigned                           NOT NULL,
 	`serviceid`              bigint unsigned                           NOT NULL,
 	`clock`                  integer         DEFAULT '0'               NOT NULL,
-	`value`                  integer         DEFAULT '0'               NOT NULL,
+	`value`                  integer         DEFAULT '-1'              NOT NULL,
 	PRIMARY KEY (servicealarmid)
 ) ENGINE=InnoDB;
 CREATE INDEX `service_alarms_1` ON `service_alarms` (`serviceid`,`clock`);
@@ -1185,7 +1184,7 @@ CREATE TABLE `autoreg_host` (
 	`listen_ip`              varchar(39)     DEFAULT ''                NOT NULL,
 	`listen_port`            integer         DEFAULT '0'               NOT NULL,
 	`listen_dns`             varchar(255)    DEFAULT ''                NOT NULL,
-	`host_metadata`          varchar(255)    DEFAULT ''                NOT NULL,
+	`host_metadata`          text                                      NOT NULL,
 	`flags`                  integer         DEFAULT '0'               NOT NULL,
 	`tls_accepted`           integer         DEFAULT '1'               NOT NULL,
 	PRIMARY KEY (autoreg_hostid)
@@ -1199,7 +1198,7 @@ CREATE TABLE `proxy_autoreg_host` (
 	`listen_ip`              varchar(39)     DEFAULT ''                NOT NULL,
 	`listen_port`            integer         DEFAULT '0'               NOT NULL,
 	`listen_dns`             varchar(255)    DEFAULT ''                NOT NULL,
-	`host_metadata`          varchar(255)    DEFAULT ''                NOT NULL,
+	`host_metadata`          text                                      NOT NULL,
 	`flags`                  integer         DEFAULT '0'               NOT NULL,
 	`tls_accepted`           integer         DEFAULT '1'               NOT NULL,
 	PRIMARY KEY (id)
@@ -1240,9 +1239,11 @@ CREATE TABLE `escalations` (
 	`status`                 integer         DEFAULT '0'               NOT NULL,
 	`itemid`                 bigint unsigned                           NULL,
 	`acknowledgeid`          bigint unsigned                           NULL,
+	`servicealarmid`         bigint unsigned                           NULL,
+	`serviceid`              bigint unsigned                           NULL,
 	PRIMARY KEY (escalationid)
 ) ENGINE=InnoDB;
-CREATE UNIQUE INDEX `escalations_1` ON `escalations` (`triggerid`,`itemid`,`escalationid`);
+CREATE UNIQUE INDEX `escalations_1` ON `escalations` (`triggerid`,`itemid`,`serviceid`,`escalationid`);
 CREATE INDEX `escalations_2` ON `escalations` (`eventid`);
 CREATE INDEX `escalations_3` ON `escalations` (`nextcheck`);
 CREATE TABLE `globalvars` (
@@ -1590,7 +1591,7 @@ CREATE TABLE `task_data` (
 	`taskid`                 bigint unsigned                           NOT NULL,
 	`type`                   integer         DEFAULT '0'               NOT NULL,
 	`data`                   text                                      NOT NULL,
-	`parent_taskid`          bigint unsigned                           NOT NULL,
+	`parent_taskid`          bigint unsigned                           NULL,
 	PRIMARY KEY (taskid)
 ) ENGINE=InnoDB;
 CREATE TABLE `task_result` (
@@ -1716,6 +1717,8 @@ CREATE TABLE `widget_field` (
 	`value_itemid`           bigint unsigned                           NULL,
 	`value_graphid`          bigint unsigned                           NULL,
 	`value_sysmapid`         bigint unsigned                           NULL,
+	`value_serviceid`        bigint unsigned                           NULL,
+	`value_slaid`            bigint unsigned                           NULL,
 	PRIMARY KEY (widget_fieldid)
 ) ENGINE=InnoDB;
 CREATE INDEX `widget_field_1` ON `widget_field` (`widgetid`);
@@ -1724,6 +1727,8 @@ CREATE INDEX `widget_field_3` ON `widget_field` (`value_hostid`);
 CREATE INDEX `widget_field_4` ON `widget_field` (`value_itemid`);
 CREATE INDEX `widget_field_5` ON `widget_field` (`value_graphid`);
 CREATE INDEX `widget_field_6` ON `widget_field` (`value_sysmapid`);
+CREATE INDEX `widget_field_7` ON `widget_field` (`value_serviceid`);
+CREATE INDEX `widget_field_8` ON `widget_field` (`value_slaid`);
 CREATE TABLE `task_check_now` (
 	`taskid`                 bigint unsigned                           NOT NULL,
 	`itemid`                 bigint unsigned                           NOT NULL,
@@ -1734,6 +1739,7 @@ CREATE TABLE `event_suppress` (
 	`eventid`                bigint unsigned                           NOT NULL,
 	`maintenanceid`          bigint unsigned                           NULL,
 	`suppress_until`         integer         DEFAULT '0'               NOT NULL,
+	`userid`                 bigint unsigned                           NULL,
 	PRIMARY KEY (event_suppressid)
 ) ENGINE=InnoDB;
 CREATE UNIQUE INDEX `event_suppress_1` ON `event_suppress` (`eventid`,`maintenanceid`);
@@ -1761,6 +1767,7 @@ CREATE TABLE `host_tag` (
 	`hostid`                 bigint unsigned                           NOT NULL,
 	`tag`                    varchar(255)    DEFAULT ''                NOT NULL,
 	`value`                  varchar(255)    DEFAULT ''                NOT NULL,
+	`automatic`              integer         DEFAULT '0'               NOT NULL,
 	PRIMARY KEY (hosttagid)
 ) ENGINE=InnoDB;
 CREATE INDEX `host_tag_1` ON `host_tag` (`hostid`);
@@ -1897,10 +1904,12 @@ CREATE TABLE `role_rule` (
 	`value_int`              integer         DEFAULT '0'               NOT NULL,
 	`value_str`              varchar(255)    DEFAULT ''                NOT NULL,
 	`value_moduleid`         bigint unsigned                           NULL,
+	`value_serviceid`        bigint unsigned                           NULL,
 	PRIMARY KEY (role_ruleid)
 ) ENGINE=InnoDB;
 CREATE INDEX `role_rule_1` ON `role_rule` (`roleid`);
 CREATE INDEX `role_rule_2` ON `role_rule` (`value_moduleid`);
+CREATE INDEX `role_rule_3` ON `role_rule` (`value_serviceid`);
 CREATE TABLE `token` (
 	`tokenid`                bigint unsigned                           NOT NULL,
 	`name`                   varchar(64)     DEFAULT ''                NOT NULL,
@@ -1987,38 +1996,400 @@ CREATE TABLE `report_usrgrp` (
 	PRIMARY KEY (reportusrgrpid)
 ) ENGINE=InnoDB;
 CREATE INDEX `report_usrgrp_1` ON `report_usrgrp` (`reportid`);
-CREATE TABLE `dbversion` (
-	`mandatory`              integer         DEFAULT '0'               NOT NULL,
-	`optional`               integer         DEFAULT '0'               NOT NULL
+CREATE TABLE `service_problem_tag` (
+	`service_problem_tagid`  bigint unsigned                           NOT NULL,
+	`serviceid`              bigint unsigned                           NOT NULL,
+	`tag`                    varchar(255)    DEFAULT ''                NOT NULL,
+	`operator`               integer         DEFAULT '0'               NOT NULL,
+	`value`                  varchar(255)    DEFAULT ''                NOT NULL,
+	PRIMARY KEY (service_problem_tagid)
 ) ENGINE=InnoDB;
-INSERT INTO dbversion VALUES ('5040000','5040000');
+CREATE INDEX `service_problem_tag_1` ON `service_problem_tag` (`serviceid`);
+CREATE TABLE `service_problem` (
+	`service_problemid`      bigint unsigned                           NOT NULL,
+	`eventid`                bigint unsigned                           NOT NULL,
+	`serviceid`              bigint unsigned                           NOT NULL,
+	`severity`               integer         DEFAULT '0'               NOT NULL,
+	PRIMARY KEY (service_problemid)
+) ENGINE=InnoDB;
+CREATE INDEX `service_problem_1` ON `service_problem` (`eventid`);
+CREATE INDEX `service_problem_2` ON `service_problem` (`serviceid`);
+CREATE TABLE `service_tag` (
+	`servicetagid`           bigint unsigned                           NOT NULL,
+	`serviceid`              bigint unsigned                           NOT NULL,
+	`tag`                    varchar(255)    DEFAULT ''                NOT NULL,
+	`value`                  varchar(255)    DEFAULT ''                NOT NULL,
+	PRIMARY KEY (servicetagid)
+) ENGINE=InnoDB;
+CREATE INDEX `service_tag_1` ON `service_tag` (`serviceid`);
+CREATE TABLE `service_status_rule` (
+	`service_status_ruleid`  bigint unsigned                           NOT NULL,
+	`serviceid`              bigint unsigned                           NOT NULL,
+	`type`                   integer         DEFAULT '0'               NOT NULL,
+	`limit_value`            integer         DEFAULT '0'               NOT NULL,
+	`limit_status`           integer         DEFAULT '0'               NOT NULL,
+	`new_status`             integer         DEFAULT '0'               NOT NULL,
+	PRIMARY KEY (service_status_ruleid)
+) ENGINE=InnoDB;
+CREATE INDEX `service_status_rule_1` ON `service_status_rule` (`serviceid`);
+CREATE TABLE `ha_node` (
+	`ha_nodeid`              varchar(25)                               NOT NULL,
+	`name`                   varchar(255)    DEFAULT ''                NOT NULL,
+	`address`                varchar(255)    DEFAULT ''                NOT NULL,
+	`port`                   integer         DEFAULT '10051'           NOT NULL,
+	`lastaccess`             integer         DEFAULT '0'               NOT NULL,
+	`status`                 integer         DEFAULT '0'               NOT NULL,
+	`ha_sessionid`           varchar(25)     DEFAULT ''                NOT NULL,
+	PRIMARY KEY (ha_nodeid)
+) ENGINE=InnoDB;
+CREATE UNIQUE INDEX `ha_node_1` ON `ha_node` (`name`);
+CREATE INDEX `ha_node_2` ON `ha_node` (`status`,`lastaccess`);
+CREATE TABLE `sla` (
+	`slaid`                  bigint unsigned                           NOT NULL,
+	`name`                   varchar(255)    DEFAULT ''                NOT NULL,
+	`period`                 integer         DEFAULT '0'               NOT NULL,
+	`slo`                    DOUBLE PRECISION DEFAULT '99.9'            NOT NULL,
+	`effective_date`         integer         DEFAULT '0'               NOT NULL,
+	`timezone`               varchar(50)     DEFAULT 'UTC'             NOT NULL,
+	`status`                 integer         DEFAULT '1'               NOT NULL,
+	`description`            text                                      NOT NULL,
+	PRIMARY KEY (slaid)
+) ENGINE=InnoDB;
+CREATE UNIQUE INDEX `sla_1` ON `sla` (`name`);
+CREATE TABLE `sla_schedule` (
+	`sla_scheduleid`         bigint unsigned                           NOT NULL,
+	`slaid`                  bigint unsigned                           NOT NULL,
+	`period_from`            integer         DEFAULT '0'               NOT NULL,
+	`period_to`              integer         DEFAULT '0'               NOT NULL,
+	PRIMARY KEY (sla_scheduleid)
+) ENGINE=InnoDB;
+CREATE INDEX `sla_schedule_1` ON `sla_schedule` (`slaid`);
+CREATE TABLE `sla_excluded_downtime` (
+	`sla_excluded_downtimeid` bigint unsigned                           NOT NULL,
+	`slaid`                  bigint unsigned                           NOT NULL,
+	`name`                   varchar(255)    DEFAULT ''                NOT NULL,
+	`period_from`            integer         DEFAULT '0'               NOT NULL,
+	`period_to`              integer         DEFAULT '0'               NOT NULL,
+	PRIMARY KEY (sla_excluded_downtimeid)
+) ENGINE=InnoDB;
+CREATE INDEX `sla_excluded_downtime_1` ON `sla_excluded_downtime` (`slaid`);
+CREATE TABLE `sla_service_tag` (
+	`sla_service_tagid`      bigint unsigned                           NOT NULL,
+	`slaid`                  bigint unsigned                           NOT NULL,
+	`tag`                    varchar(255)    DEFAULT ''                NOT NULL,
+	`operator`               integer         DEFAULT '0'               NOT NULL,
+	`value`                  varchar(255)    DEFAULT ''                NOT NULL,
+	PRIMARY KEY (sla_service_tagid)
+) ENGINE=InnoDB;
+CREATE INDEX `sla_service_tag_1` ON `sla_service_tag` (`slaid`);
+CREATE TABLE `host_rtdata` (
+	`hostid`                 bigint unsigned                           NOT NULL,
+	`active_available`       integer         DEFAULT '0'               NOT NULL,
+	`lastaccess`             integer         DEFAULT '0'               NOT NULL,
+	`version`                integer         DEFAULT '0'               NOT NULL,
+	`compatibility`          integer         DEFAULT '0'               NOT NULL,
+	PRIMARY KEY (hostid)
+) ENGINE=InnoDB;
+CREATE TABLE `userdirectory` (
+	`userdirectoryid`        bigint unsigned                           NOT NULL,
+	`name`                   varchar(128)    DEFAULT ''                NOT NULL,
+	`description`            text                                      NOT NULL,
+	`host`                   varchar(255)    DEFAULT ''                NOT NULL,
+	`port`                   integer         DEFAULT '389'             NOT NULL,
+	`base_dn`                varchar(255)    DEFAULT ''                NOT NULL,
+	`bind_dn`                varchar(255)    DEFAULT ''                NOT NULL,
+	`bind_password`          varchar(128)    DEFAULT ''                NOT NULL,
+	`search_attribute`       varchar(128)    DEFAULT ''                NOT NULL,
+	`start_tls`              integer         DEFAULT '0'               NOT NULL,
+	`search_filter`          varchar(255)    DEFAULT ''                NOT NULL,
+	PRIMARY KEY (userdirectoryid)
+) ENGINE=InnoDB;
+CREATE TABLE `changelog` (
+	`changelogid`            bigint unsigned                           NOT NULL auto_increment,
+	`object`                 integer         DEFAULT '0'               NOT NULL,
+	`objectid`               bigint unsigned                           NOT NULL,
+	`operation`              integer         DEFAULT '0'               NOT NULL,
+	`clock`                  integer         DEFAULT '0'               NOT NULL,
+	PRIMARY KEY (changelogid)
+) ENGINE=InnoDB;
+CREATE INDEX `changelog_1` ON `changelog` (`clock`);
+CREATE TABLE `dbversion` (
+	`dbversionid`            bigint unsigned                           NOT NULL,
+	`mandatory`              integer         DEFAULT '0'               NOT NULL,
+	`optional`               integer         DEFAULT '0'               NOT NULL,
+	PRIMARY KEY (dbversionid)
+) ENGINE=InnoDB;
+INSERT INTO dbversion VALUES ('1','6030063','6030063');
+DELIMITER $$
+create trigger hosts_insert after insert on hosts
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (1,new.hostid,1,unix_timestamp());
+$$
+create trigger hosts_update after update on hosts
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (1,old.hostid,2,unix_timestamp());
+$$
+create trigger hosts_delete before delete on hosts
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (1,old.hostid,3,unix_timestamp());
+$$
+create trigger drules_insert after insert on drules
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (9,new.druleid,1,unix_timestamp());
+$$
+create trigger drules_update after update on drules
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (9,old.druleid,2,unix_timestamp());
+$$
+create trigger drules_delete before delete on drules
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (9,old.druleid,3,unix_timestamp());
+$$
+create trigger dchecks_insert after insert on dchecks
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (10,new.dcheckid,1,unix_timestamp());
+$$
+create trigger dchecks_update after update on dchecks
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (10,old.dcheckid,2,unix_timestamp());
+$$
+create trigger dchecks_delete before delete on dchecks
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (10,old.dcheckid,3,unix_timestamp());
+$$
+create trigger httptest_insert after insert on httptest
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (11,new.httptestid,1,unix_timestamp());
+$$
+create trigger httptest_update after update on httptest
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (11,old.httptestid,2,unix_timestamp());
+$$
+create trigger httptest_delete before delete on httptest
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (11,old.httptestid,3,unix_timestamp());
+$$
+create trigger httpstep_insert after insert on httpstep
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (14,new.httpstepid,1,unix_timestamp());
+$$
+create trigger httpstep_update after update on httpstep
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (14,old.httpstepid,2,unix_timestamp());
+$$
+create trigger httpstep_delete before delete on httpstep
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (14,old.httpstepid,3,unix_timestamp());
+$$
+create trigger items_insert after insert on items
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (3,new.itemid,1,unix_timestamp());
+$$
+create trigger items_update after update on items
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (3,old.itemid,2,unix_timestamp());
+$$
+create trigger items_delete before delete on items
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (3,old.itemid,3,unix_timestamp());
+$$
+create trigger httpstepitem_insert after insert on httpstepitem
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (16,new.httpstepitemid,1,unix_timestamp());
+$$
+create trigger httpstepitem_update after update on httpstepitem
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (16,old.httpstepitemid,2,unix_timestamp());
+$$
+create trigger httpstepitem_delete before delete on httpstepitem
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (16,old.httpstepitemid,3,unix_timestamp());
+$$
+create trigger httptestitem_insert after insert on httptestitem
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (13,new.httptestitemid,1,unix_timestamp());
+$$
+create trigger httptestitem_update after update on httptestitem
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (13,old.httptestitemid,2,unix_timestamp());
+$$
+create trigger httptestitem_delete before delete on httptestitem
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (13,old.httptestitemid,3,unix_timestamp());
+$$
+create trigger triggers_insert after insert on triggers
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (5,new.triggerid,1,unix_timestamp());
+$$
+create trigger triggers_update after update on triggers
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (5,old.triggerid,2,unix_timestamp());
+$$
+create trigger triggers_delete before delete on triggers
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (5,old.triggerid,3,unix_timestamp());
+$$
+create trigger functions_insert after insert on functions
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (7,new.functionid,1,unix_timestamp());
+$$
+create trigger functions_update after update on functions
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (7,old.functionid,2,unix_timestamp());
+$$
+create trigger functions_delete before delete on functions
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (7,old.functionid,3,unix_timestamp());
+$$
+create trigger trigger_tag_insert after insert on trigger_tag
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (6,new.triggertagid,1,unix_timestamp());
+$$
+create trigger trigger_tag_update after update on trigger_tag
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (6,old.triggertagid,2,unix_timestamp());
+$$
+create trigger trigger_tag_delete before delete on trigger_tag
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (6,old.triggertagid,3,unix_timestamp());
+$$
+create trigger item_preproc_insert after insert on item_preproc
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (8,new.item_preprocid,1,unix_timestamp());
+$$
+create trigger item_preproc_update after update on item_preproc
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (8,old.item_preprocid,2,unix_timestamp());
+$$
+create trigger item_preproc_delete before delete on item_preproc
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (8,old.item_preprocid,3,unix_timestamp());
+$$
+create trigger httptest_field_insert after insert on httptest_field
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (12,new.httptest_fieldid,1,unix_timestamp());
+$$
+create trigger httptest_field_update after update on httptest_field
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (12,old.httptest_fieldid,2,unix_timestamp());
+$$
+create trigger httptest_field_delete before delete on httptest_field
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (12,old.httptest_fieldid,3,unix_timestamp());
+$$
+create trigger httpstep_field_insert after insert on httpstep_field
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (15,new.httpstep_fieldid,1,unix_timestamp());
+$$
+create trigger httpstep_field_update after update on httpstep_field
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (15,old.httpstep_fieldid,2,unix_timestamp());
+$$
+create trigger httpstep_field_delete before delete on httpstep_field
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (15,old.httpstep_fieldid,3,unix_timestamp());
+$$
+create trigger host_tag_insert after insert on host_tag
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (2,new.hosttagid,1,unix_timestamp());
+$$
+create trigger host_tag_update after update on host_tag
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (2,old.hosttagid,2,unix_timestamp());
+$$
+create trigger host_tag_delete before delete on host_tag
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (2,old.hosttagid,3,unix_timestamp());
+$$
+create trigger item_tag_insert after insert on item_tag
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (4,new.itemtagid,1,unix_timestamp());
+$$
+create trigger item_tag_update after update on item_tag
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (4,old.itemtagid,2,unix_timestamp());
+$$
+create trigger item_tag_delete before delete on item_tag
+for each row
+insert into changelog (object,objectid,operation,clock)
+values (4,old.itemtagid,3,unix_timestamp());
+$$
+DELIMITER ;
 ALTER TABLE `users` ADD CONSTRAINT `c_users_1` FOREIGN KEY (`roleid`) REFERENCES `role` (`roleid`) ON DELETE CASCADE;
 ALTER TABLE `hosts` ADD CONSTRAINT `c_hosts_1` FOREIGN KEY (`proxy_hostid`) REFERENCES `hosts` (`hostid`);
 ALTER TABLE `hosts` ADD CONSTRAINT `c_hosts_2` FOREIGN KEY (`maintenanceid`) REFERENCES `maintenances` (`maintenanceid`);
-ALTER TABLE `hosts` ADD CONSTRAINT `c_hosts_3` FOREIGN KEY (`templateid`) REFERENCES `hosts` (`hostid`) ON DELETE CASCADE;
+ALTER TABLE `hosts` ADD CONSTRAINT `c_hosts_3` FOREIGN KEY (`templateid`) REFERENCES `hosts` (`hostid`);
 ALTER TABLE `group_prototype` ADD CONSTRAINT `c_group_prototype_1` FOREIGN KEY (`hostid`) REFERENCES `hosts` (`hostid`) ON DELETE CASCADE;
 ALTER TABLE `group_prototype` ADD CONSTRAINT `c_group_prototype_2` FOREIGN KEY (`groupid`) REFERENCES `hstgrp` (`groupid`);
 ALTER TABLE `group_prototype` ADD CONSTRAINT `c_group_prototype_3` FOREIGN KEY (`templateid`) REFERENCES `group_prototype` (`group_prototypeid`) ON DELETE CASCADE;
 ALTER TABLE `group_discovery` ADD CONSTRAINT `c_group_discovery_1` FOREIGN KEY (`groupid`) REFERENCES `hstgrp` (`groupid`) ON DELETE CASCADE;
 ALTER TABLE `group_discovery` ADD CONSTRAINT `c_group_discovery_2` FOREIGN KEY (`parent_group_prototypeid`) REFERENCES `group_prototype` (`group_prototypeid`);
 ALTER TABLE `drules` ADD CONSTRAINT `c_drules_1` FOREIGN KEY (`proxy_hostid`) REFERENCES `hosts` (`hostid`);
-ALTER TABLE `dchecks` ADD CONSTRAINT `c_dchecks_1` FOREIGN KEY (`druleid`) REFERENCES `drules` (`druleid`) ON DELETE CASCADE;
-ALTER TABLE `httptest` ADD CONSTRAINT `c_httptest_2` FOREIGN KEY (`hostid`) REFERENCES `hosts` (`hostid`) ON DELETE CASCADE;
-ALTER TABLE `httptest` ADD CONSTRAINT `c_httptest_3` FOREIGN KEY (`templateid`) REFERENCES `httptest` (`httptestid`) ON DELETE CASCADE;
-ALTER TABLE `httpstep` ADD CONSTRAINT `c_httpstep_1` FOREIGN KEY (`httptestid`) REFERENCES `httptest` (`httptestid`) ON DELETE CASCADE;
+ALTER TABLE `dchecks` ADD CONSTRAINT `c_dchecks_1` FOREIGN KEY (`druleid`) REFERENCES `drules` (`druleid`);
+ALTER TABLE `httptest` ADD CONSTRAINT `c_httptest_2` FOREIGN KEY (`hostid`) REFERENCES `hosts` (`hostid`);
+ALTER TABLE `httptest` ADD CONSTRAINT `c_httptest_3` FOREIGN KEY (`templateid`) REFERENCES `httptest` (`httptestid`);
+ALTER TABLE `httpstep` ADD CONSTRAINT `c_httpstep_1` FOREIGN KEY (`httptestid`) REFERENCES `httptest` (`httptestid`);
 ALTER TABLE `interface` ADD CONSTRAINT `c_interface_1` FOREIGN KEY (`hostid`) REFERENCES `hosts` (`hostid`) ON DELETE CASCADE;
 ALTER TABLE `valuemap` ADD CONSTRAINT `c_valuemap_1` FOREIGN KEY (`hostid`) REFERENCES `hosts` (`hostid`) ON DELETE CASCADE;
-ALTER TABLE `items` ADD CONSTRAINT `c_items_1` FOREIGN KEY (`hostid`) REFERENCES `hosts` (`hostid`) ON DELETE CASCADE;
-ALTER TABLE `items` ADD CONSTRAINT `c_items_2` FOREIGN KEY (`templateid`) REFERENCES `items` (`itemid`) ON DELETE CASCADE;
+ALTER TABLE `items` ADD CONSTRAINT `c_items_1` FOREIGN KEY (`hostid`) REFERENCES `hosts` (`hostid`);
+ALTER TABLE `items` ADD CONSTRAINT `c_items_2` FOREIGN KEY (`templateid`) REFERENCES `items` (`itemid`);
 ALTER TABLE `items` ADD CONSTRAINT `c_items_3` FOREIGN KEY (`valuemapid`) REFERENCES `valuemap` (`valuemapid`);
 ALTER TABLE `items` ADD CONSTRAINT `c_items_4` FOREIGN KEY (`interfaceid`) REFERENCES `interface` (`interfaceid`);
-ALTER TABLE `items` ADD CONSTRAINT `c_items_5` FOREIGN KEY (`master_itemid`) REFERENCES `items` (`itemid`) ON DELETE CASCADE;
-ALTER TABLE `httpstepitem` ADD CONSTRAINT `c_httpstepitem_1` FOREIGN KEY (`httpstepid`) REFERENCES `httpstep` (`httpstepid`) ON DELETE CASCADE;
-ALTER TABLE `httpstepitem` ADD CONSTRAINT `c_httpstepitem_2` FOREIGN KEY (`itemid`) REFERENCES `items` (`itemid`) ON DELETE CASCADE;
-ALTER TABLE `httptestitem` ADD CONSTRAINT `c_httptestitem_1` FOREIGN KEY (`httptestid`) REFERENCES `httptest` (`httptestid`) ON DELETE CASCADE;
-ALTER TABLE `httptestitem` ADD CONSTRAINT `c_httptestitem_2` FOREIGN KEY (`itemid`) REFERENCES `items` (`itemid`) ON DELETE CASCADE;
+ALTER TABLE `items` ADD CONSTRAINT `c_items_5` FOREIGN KEY (`master_itemid`) REFERENCES `items` (`itemid`);
+ALTER TABLE `httpstepitem` ADD CONSTRAINT `c_httpstepitem_1` FOREIGN KEY (`httpstepid`) REFERENCES `httpstep` (`httpstepid`);
+ALTER TABLE `httpstepitem` ADD CONSTRAINT `c_httpstepitem_2` FOREIGN KEY (`itemid`) REFERENCES `items` (`itemid`);
+ALTER TABLE `httptestitem` ADD CONSTRAINT `c_httptestitem_1` FOREIGN KEY (`httptestid`) REFERENCES `httptest` (`httptestid`);
+ALTER TABLE `httptestitem` ADD CONSTRAINT `c_httptestitem_2` FOREIGN KEY (`itemid`) REFERENCES `items` (`itemid`);
 ALTER TABLE `media_type_param` ADD CONSTRAINT `c_media_type_param_1` FOREIGN KEY (`mediatypeid`) REFERENCES `media_type` (`mediatypeid`) ON DELETE CASCADE;
 ALTER TABLE `media_type_message` ADD CONSTRAINT `c_media_type_message_1` FOREIGN KEY (`mediatypeid`) REFERENCES `media_type` (`mediatypeid`) ON DELETE CASCADE;
+ALTER TABLE `usrgrp` ADD CONSTRAINT `c_usrgrp_2` FOREIGN KEY (`userdirectoryid`) REFERENCES `userdirectory` (`userdirectoryid`);
 ALTER TABLE `users_groups` ADD CONSTRAINT `c_users_groups_1` FOREIGN KEY (`usrgrpid`) REFERENCES `usrgrp` (`usrgrpid`) ON DELETE CASCADE;
 ALTER TABLE `users_groups` ADD CONSTRAINT `c_users_groups_2` FOREIGN KEY (`userid`) REFERENCES `users` (`userid`) ON DELETE CASCADE;
 ALTER TABLE `scripts` ADD CONSTRAINT `c_scripts_1` FOREIGN KEY (`usrgrpid`) REFERENCES `usrgrp` (`usrgrpid`);
@@ -2045,11 +2416,12 @@ ALTER TABLE `opconditions` ADD CONSTRAINT `c_opconditions_1` FOREIGN KEY (`opera
 ALTER TABLE `conditions` ADD CONSTRAINT `c_conditions_1` FOREIGN KEY (`actionid`) REFERENCES `actions` (`actionid`) ON DELETE CASCADE;
 ALTER TABLE `config` ADD CONSTRAINT `c_config_1` FOREIGN KEY (`alert_usrgrpid`) REFERENCES `usrgrp` (`usrgrpid`);
 ALTER TABLE `config` ADD CONSTRAINT `c_config_2` FOREIGN KEY (`discovery_groupid`) REFERENCES `hstgrp` (`groupid`);
-ALTER TABLE `triggers` ADD CONSTRAINT `c_triggers_1` FOREIGN KEY (`templateid`) REFERENCES `triggers` (`triggerid`) ON DELETE CASCADE;
+ALTER TABLE `config` ADD CONSTRAINT `c_config_3` FOREIGN KEY (`ldap_userdirectoryid`) REFERENCES `userdirectory` (`userdirectoryid`);
+ALTER TABLE `triggers` ADD CONSTRAINT `c_triggers_1` FOREIGN KEY (`templateid`) REFERENCES `triggers` (`triggerid`);
 ALTER TABLE `trigger_depends` ADD CONSTRAINT `c_trigger_depends_1` FOREIGN KEY (`triggerid_down`) REFERENCES `triggers` (`triggerid`) ON DELETE CASCADE;
 ALTER TABLE `trigger_depends` ADD CONSTRAINT `c_trigger_depends_2` FOREIGN KEY (`triggerid_up`) REFERENCES `triggers` (`triggerid`) ON DELETE CASCADE;
-ALTER TABLE `functions` ADD CONSTRAINT `c_functions_1` FOREIGN KEY (`itemid`) REFERENCES `items` (`itemid`) ON DELETE CASCADE;
-ALTER TABLE `functions` ADD CONSTRAINT `c_functions_2` FOREIGN KEY (`triggerid`) REFERENCES `triggers` (`triggerid`) ON DELETE CASCADE;
+ALTER TABLE `functions` ADD CONSTRAINT `c_functions_1` FOREIGN KEY (`itemid`) REFERENCES `items` (`itemid`);
+ALTER TABLE `functions` ADD CONSTRAINT `c_functions_2` FOREIGN KEY (`triggerid`) REFERENCES `triggers` (`triggerid`);
 ALTER TABLE `graphs` ADD CONSTRAINT `c_graphs_1` FOREIGN KEY (`templateid`) REFERENCES `graphs` (`graphid`) ON DELETE CASCADE;
 ALTER TABLE `graphs` ADD CONSTRAINT `c_graphs_2` FOREIGN KEY (`ymin_itemid`) REFERENCES `items` (`itemid`);
 ALTER TABLE `graphs` ADD CONSTRAINT `c_graphs_3` FOREIGN KEY (`ymax_itemid`) REFERENCES `items` (`itemid`);
@@ -2065,10 +2437,8 @@ ALTER TABLE `media` ADD CONSTRAINT `c_media_1` FOREIGN KEY (`userid`) REFERENCES
 ALTER TABLE `media` ADD CONSTRAINT `c_media_2` FOREIGN KEY (`mediatypeid`) REFERENCES `media_type` (`mediatypeid`) ON DELETE CASCADE;
 ALTER TABLE `rights` ADD CONSTRAINT `c_rights_1` FOREIGN KEY (`groupid`) REFERENCES `usrgrp` (`usrgrpid`) ON DELETE CASCADE;
 ALTER TABLE `rights` ADD CONSTRAINT `c_rights_2` FOREIGN KEY (`id`) REFERENCES `hstgrp` (`groupid`) ON DELETE CASCADE;
-ALTER TABLE `services` ADD CONSTRAINT `c_services_1` FOREIGN KEY (`triggerid`) REFERENCES `triggers` (`triggerid`) ON DELETE CASCADE;
 ALTER TABLE `services_links` ADD CONSTRAINT `c_services_links_1` FOREIGN KEY (`serviceupid`) REFERENCES `services` (`serviceid`) ON DELETE CASCADE;
 ALTER TABLE `services_links` ADD CONSTRAINT `c_services_links_2` FOREIGN KEY (`servicedownid`) REFERENCES `services` (`serviceid`) ON DELETE CASCADE;
-ALTER TABLE `services_times` ADD CONSTRAINT `c_services_times_1` FOREIGN KEY (`serviceid`) REFERENCES `services` (`serviceid`) ON DELETE CASCADE;
 ALTER TABLE `icon_map` ADD CONSTRAINT `c_icon_map_1` FOREIGN KEY (`default_iconid`) REFERENCES `images` (`imageid`);
 ALTER TABLE `icon_mapping` ADD CONSTRAINT `c_icon_mapping_1` FOREIGN KEY (`iconmapid`) REFERENCES `icon_map` (`iconmapid`) ON DELETE CASCADE;
 ALTER TABLE `icon_mapping` ADD CONSTRAINT `c_icon_mapping_2` FOREIGN KEY (`iconid`) REFERENCES `images` (`imageid`);
@@ -2106,8 +2476,6 @@ ALTER TABLE `alerts` ADD CONSTRAINT `c_alerts_5` FOREIGN KEY (`p_eventid`) REFER
 ALTER TABLE `alerts` ADD CONSTRAINT `c_alerts_6` FOREIGN KEY (`acknowledgeid`) REFERENCES `acknowledges` (`acknowledgeid`) ON DELETE CASCADE;
 ALTER TABLE `acknowledges` ADD CONSTRAINT `c_acknowledges_1` FOREIGN KEY (`userid`) REFERENCES `users` (`userid`) ON DELETE CASCADE;
 ALTER TABLE `acknowledges` ADD CONSTRAINT `c_acknowledges_2` FOREIGN KEY (`eventid`) REFERENCES `events` (`eventid`) ON DELETE CASCADE;
-ALTER TABLE `auditlog` ADD CONSTRAINT `c_auditlog_1` FOREIGN KEY (`userid`) REFERENCES `users` (`userid`) ON DELETE CASCADE;
-ALTER TABLE `auditlog_details` ADD CONSTRAINT `c_auditlog_details_1` FOREIGN KEY (`auditid`) REFERENCES `auditlog` (`auditid`) ON DELETE CASCADE;
 ALTER TABLE `service_alarms` ADD CONSTRAINT `c_service_alarms_1` FOREIGN KEY (`serviceid`) REFERENCES `services` (`serviceid`) ON DELETE CASCADE;
 ALTER TABLE `autoreg_host` ADD CONSTRAINT `c_autoreg_host_1` FOREIGN KEY (`proxy_hostid`) REFERENCES `hosts` (`hostid`) ON DELETE CASCADE;
 ALTER TABLE `dhosts` ADD CONSTRAINT `c_dhosts_1` FOREIGN KEY (`druleid`) REFERENCES `drules` (`druleid`) ON DELETE CASCADE;
@@ -2130,7 +2498,7 @@ ALTER TABLE `trigger_discovery` ADD CONSTRAINT `c_trigger_discovery_2` FOREIGN K
 ALTER TABLE `item_condition` ADD CONSTRAINT `c_item_condition_1` FOREIGN KEY (`itemid`) REFERENCES `items` (`itemid`) ON DELETE CASCADE;
 ALTER TABLE `item_rtdata` ADD CONSTRAINT `c_item_rtdata_1` FOREIGN KEY (`itemid`) REFERENCES `items` (`itemid`) ON DELETE CASCADE;
 ALTER TABLE `opinventory` ADD CONSTRAINT `c_opinventory_1` FOREIGN KEY (`operationid`) REFERENCES `operations` (`operationid`) ON DELETE CASCADE;
-ALTER TABLE `trigger_tag` ADD CONSTRAINT `c_trigger_tag_1` FOREIGN KEY (`triggerid`) REFERENCES `triggers` (`triggerid`) ON DELETE CASCADE;
+ALTER TABLE `trigger_tag` ADD CONSTRAINT `c_trigger_tag_1` FOREIGN KEY (`triggerid`) REFERENCES `triggers` (`triggerid`);
 ALTER TABLE `event_tag` ADD CONSTRAINT `c_event_tag_1` FOREIGN KEY (`eventid`) REFERENCES `events` (`eventid`) ON DELETE CASCADE;
 ALTER TABLE `problem` ADD CONSTRAINT `c_problem_1` FOREIGN KEY (`eventid`) REFERENCES `events` (`eventid`) ON DELETE CASCADE;
 ALTER TABLE `problem` ADD CONSTRAINT `c_problem_2` FOREIGN KEY (`r_eventid`) REFERENCES `events` (`eventid`) ON DELETE CASCADE;
@@ -2149,7 +2517,7 @@ ALTER TABLE `corr_condition_tagvalue` ADD CONSTRAINT `c_corr_condition_tagvalue_
 ALTER TABLE `corr_operation` ADD CONSTRAINT `c_corr_operation_1` FOREIGN KEY (`correlationid`) REFERENCES `correlation` (`correlationid`) ON DELETE CASCADE;
 ALTER TABLE `task` ADD CONSTRAINT `c_task_1` FOREIGN KEY (`proxy_hostid`) REFERENCES `hosts` (`hostid`) ON DELETE CASCADE;
 ALTER TABLE `task_close_problem` ADD CONSTRAINT `c_task_close_problem_1` FOREIGN KEY (`taskid`) REFERENCES `task` (`taskid`) ON DELETE CASCADE;
-ALTER TABLE `item_preproc` ADD CONSTRAINT `c_item_preproc_1` FOREIGN KEY (`itemid`) REFERENCES `items` (`itemid`) ON DELETE CASCADE;
+ALTER TABLE `item_preproc` ADD CONSTRAINT `c_item_preproc_1` FOREIGN KEY (`itemid`) REFERENCES `items` (`itemid`);
 ALTER TABLE `task_remote_command` ADD CONSTRAINT `c_task_remote_command_1` FOREIGN KEY (`taskid`) REFERENCES `task` (`taskid`) ON DELETE CASCADE;
 ALTER TABLE `task_remote_command_result` ADD CONSTRAINT `c_task_remote_command_result_1` FOREIGN KEY (`taskid`) REFERENCES `task` (`taskid`) ON DELETE CASCADE;
 ALTER TABLE `task_data` ADD CONSTRAINT `c_task_data_1` FOREIGN KEY (`taskid`) REFERENCES `task` (`taskid`) ON DELETE CASCADE;
@@ -2158,8 +2526,8 @@ ALTER TABLE `task_acknowledge` ADD CONSTRAINT `c_task_acknowledge_1` FOREIGN KEY
 ALTER TABLE `sysmap_shape` ADD CONSTRAINT `c_sysmap_shape_1` FOREIGN KEY (`sysmapid`) REFERENCES `sysmaps` (`sysmapid`) ON DELETE CASCADE;
 ALTER TABLE `sysmap_element_trigger` ADD CONSTRAINT `c_sysmap_element_trigger_1` FOREIGN KEY (`selementid`) REFERENCES `sysmaps_elements` (`selementid`) ON DELETE CASCADE;
 ALTER TABLE `sysmap_element_trigger` ADD CONSTRAINT `c_sysmap_element_trigger_2` FOREIGN KEY (`triggerid`) REFERENCES `triggers` (`triggerid`) ON DELETE CASCADE;
-ALTER TABLE `httptest_field` ADD CONSTRAINT `c_httptest_field_1` FOREIGN KEY (`httptestid`) REFERENCES `httptest` (`httptestid`) ON DELETE CASCADE;
-ALTER TABLE `httpstep_field` ADD CONSTRAINT `c_httpstep_field_1` FOREIGN KEY (`httpstepid`) REFERENCES `httpstep` (`httpstepid`) ON DELETE CASCADE;
+ALTER TABLE `httptest_field` ADD CONSTRAINT `c_httptest_field_1` FOREIGN KEY (`httptestid`) REFERENCES `httptest` (`httptestid`);
+ALTER TABLE `httpstep_field` ADD CONSTRAINT `c_httpstep_field_1` FOREIGN KEY (`httpstepid`) REFERENCES `httpstep` (`httpstepid`);
 ALTER TABLE `dashboard` ADD CONSTRAINT `c_dashboard_1` FOREIGN KEY (`userid`) REFERENCES `users` (`userid`);
 ALTER TABLE `dashboard` ADD CONSTRAINT `c_dashboard_2` FOREIGN KEY (`templateid`) REFERENCES `hosts` (`hostid`) ON DELETE CASCADE;
 ALTER TABLE `dashboard_user` ADD CONSTRAINT `c_dashboard_user_1` FOREIGN KEY (`dashboardid`) REFERENCES `dashboard` (`dashboardid`) ON DELETE CASCADE;
@@ -2174,12 +2542,15 @@ ALTER TABLE `widget_field` ADD CONSTRAINT `c_widget_field_3` FOREIGN KEY (`value
 ALTER TABLE `widget_field` ADD CONSTRAINT `c_widget_field_4` FOREIGN KEY (`value_itemid`) REFERENCES `items` (`itemid`) ON DELETE CASCADE;
 ALTER TABLE `widget_field` ADD CONSTRAINT `c_widget_field_5` FOREIGN KEY (`value_graphid`) REFERENCES `graphs` (`graphid`) ON DELETE CASCADE;
 ALTER TABLE `widget_field` ADD CONSTRAINT `c_widget_field_6` FOREIGN KEY (`value_sysmapid`) REFERENCES `sysmaps` (`sysmapid`) ON DELETE CASCADE;
+ALTER TABLE `widget_field` ADD CONSTRAINT `c_widget_field_7` FOREIGN KEY (`value_serviceid`) REFERENCES `services` (`serviceid`) ON DELETE CASCADE;
+ALTER TABLE `widget_field` ADD CONSTRAINT `c_widget_field_8` FOREIGN KEY (`value_slaid`) REFERENCES `sla` (`slaid`) ON DELETE CASCADE;
 ALTER TABLE `task_check_now` ADD CONSTRAINT `c_task_check_now_1` FOREIGN KEY (`taskid`) REFERENCES `task` (`taskid`) ON DELETE CASCADE;
 ALTER TABLE `event_suppress` ADD CONSTRAINT `c_event_suppress_1` FOREIGN KEY (`eventid`) REFERENCES `events` (`eventid`) ON DELETE CASCADE;
 ALTER TABLE `event_suppress` ADD CONSTRAINT `c_event_suppress_2` FOREIGN KEY (`maintenanceid`) REFERENCES `maintenances` (`maintenanceid`) ON DELETE CASCADE;
+ALTER TABLE `event_suppress` ADD CONSTRAINT `c_event_suppress_3` FOREIGN KEY (`userid`) REFERENCES `users` (`userid`) ON DELETE CASCADE;
 ALTER TABLE `maintenance_tag` ADD CONSTRAINT `c_maintenance_tag_1` FOREIGN KEY (`maintenanceid`) REFERENCES `maintenances` (`maintenanceid`) ON DELETE CASCADE;
 ALTER TABLE `lld_macro_path` ADD CONSTRAINT `c_lld_macro_path_1` FOREIGN KEY (`itemid`) REFERENCES `items` (`itemid`) ON DELETE CASCADE;
-ALTER TABLE `host_tag` ADD CONSTRAINT `c_host_tag_1` FOREIGN KEY (`hostid`) REFERENCES `hosts` (`hostid`) ON DELETE CASCADE;
+ALTER TABLE `host_tag` ADD CONSTRAINT `c_host_tag_1` FOREIGN KEY (`hostid`) REFERENCES `hosts` (`hostid`);
 ALTER TABLE `interface_snmp` ADD CONSTRAINT `c_interface_snmp_1` FOREIGN KEY (`interfaceid`) REFERENCES `interface` (`interfaceid`) ON DELETE CASCADE;
 ALTER TABLE `lld_override` ADD CONSTRAINT `c_lld_override_1` FOREIGN KEY (`itemid`) REFERENCES `items` (`itemid`) ON DELETE CASCADE;
 ALTER TABLE `lld_override_condition` ADD CONSTRAINT `c_lld_override_condition_1` FOREIGN KEY (`lld_overrideid`) REFERENCES `lld_override` (`lld_overrideid`) ON DELETE CASCADE;
@@ -2197,9 +2568,10 @@ ALTER TABLE `lld_override_opinventory` ADD CONSTRAINT `c_lld_override_opinventor
 ALTER TABLE `item_parameter` ADD CONSTRAINT `c_item_parameter_1` FOREIGN KEY (`itemid`) REFERENCES `items` (`itemid`) ON DELETE CASCADE;
 ALTER TABLE `role_rule` ADD CONSTRAINT `c_role_rule_1` FOREIGN KEY (`roleid`) REFERENCES `role` (`roleid`) ON DELETE CASCADE;
 ALTER TABLE `role_rule` ADD CONSTRAINT `c_role_rule_2` FOREIGN KEY (`value_moduleid`) REFERENCES `module` (`moduleid`) ON DELETE CASCADE;
+ALTER TABLE `role_rule` ADD CONSTRAINT `c_role_rule_3` FOREIGN KEY (`value_serviceid`) REFERENCES `services` (`serviceid`) ON DELETE CASCADE;
 ALTER TABLE `token` ADD CONSTRAINT `c_token_1` FOREIGN KEY (`userid`) REFERENCES `users` (`userid`) ON DELETE CASCADE;
 ALTER TABLE `token` ADD CONSTRAINT `c_token_2` FOREIGN KEY (`creator_userid`) REFERENCES `users` (`userid`);
-ALTER TABLE `item_tag` ADD CONSTRAINT `c_item_tag_1` FOREIGN KEY (`itemid`) REFERENCES `items` (`itemid`) ON DELETE CASCADE;
+ALTER TABLE `item_tag` ADD CONSTRAINT `c_item_tag_1` FOREIGN KEY (`itemid`) REFERENCES `items` (`itemid`);
 ALTER TABLE `httptest_tag` ADD CONSTRAINT `c_httptest_tag_1` FOREIGN KEY (`httptestid`) REFERENCES `httptest` (`httptestid`) ON DELETE CASCADE;
 ALTER TABLE `sysmaps_element_tag` ADD CONSTRAINT `c_sysmaps_element_tag_1` FOREIGN KEY (`selementid`) REFERENCES `sysmaps_elements` (`selementid`) ON DELETE CASCADE;
 ALTER TABLE `report` ADD CONSTRAINT `c_report_1` FOREIGN KEY (`userid`) REFERENCES `users` (`userid`) ON DELETE CASCADE;
@@ -2211,3 +2583,12 @@ ALTER TABLE `report_user` ADD CONSTRAINT `c_report_user_3` FOREIGN KEY (`access_
 ALTER TABLE `report_usrgrp` ADD CONSTRAINT `c_report_usrgrp_1` FOREIGN KEY (`reportid`) REFERENCES `report` (`reportid`) ON DELETE CASCADE;
 ALTER TABLE `report_usrgrp` ADD CONSTRAINT `c_report_usrgrp_2` FOREIGN KEY (`usrgrpid`) REFERENCES `usrgrp` (`usrgrpid`) ON DELETE CASCADE;
 ALTER TABLE `report_usrgrp` ADD CONSTRAINT `c_report_usrgrp_3` FOREIGN KEY (`access_userid`) REFERENCES `users` (`userid`);
+ALTER TABLE `service_problem_tag` ADD CONSTRAINT `c_service_problem_tag_1` FOREIGN KEY (`serviceid`) REFERENCES `services` (`serviceid`) ON DELETE CASCADE;
+ALTER TABLE `service_problem` ADD CONSTRAINT `c_service_problem_1` FOREIGN KEY (`eventid`) REFERENCES `problem` (`eventid`) ON DELETE CASCADE;
+ALTER TABLE `service_problem` ADD CONSTRAINT `c_service_problem_2` FOREIGN KEY (`serviceid`) REFERENCES `services` (`serviceid`) ON DELETE CASCADE;
+ALTER TABLE `service_tag` ADD CONSTRAINT `c_service_tag_1` FOREIGN KEY (`serviceid`) REFERENCES `services` (`serviceid`) ON DELETE CASCADE;
+ALTER TABLE `service_status_rule` ADD CONSTRAINT `c_service_status_rule_1` FOREIGN KEY (`serviceid`) REFERENCES `services` (`serviceid`) ON DELETE CASCADE;
+ALTER TABLE `sla_schedule` ADD CONSTRAINT `c_sla_schedule_1` FOREIGN KEY (`slaid`) REFERENCES `sla` (`slaid`) ON DELETE CASCADE;
+ALTER TABLE `sla_excluded_downtime` ADD CONSTRAINT `c_sla_excluded_downtime_1` FOREIGN KEY (`slaid`) REFERENCES `sla` (`slaid`) ON DELETE CASCADE;
+ALTER TABLE `sla_service_tag` ADD CONSTRAINT `c_sla_service_tag_1` FOREIGN KEY (`slaid`) REFERENCES `sla` (`slaid`) ON DELETE CASCADE;
+ALTER TABLE `host_rtdata` ADD CONSTRAINT `c_host_rtdata_1` FOREIGN KEY (`hostid`) REFERENCES `hosts` (`hostid`) ON DELETE CASCADE;

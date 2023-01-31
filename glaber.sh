@@ -134,7 +134,7 @@ recreate() {
 }
 remote-docker() {
   current_branch=$(git rev-parse --abbrev-ref HEAD)
-  tag=$GLABER_BUILD_VERSION-$(date '+%Y-%m-%d-%H-%M')
+  tag=$GLABER_TAG-$(date '+%Y-%m-%d-%H-%M')
   git-reset-variables-files
   git add .
   git commit -m "build auto commit"
@@ -145,7 +145,7 @@ remote-docker() {
 }
 remote-packer() {
   current_branch=$(git rev-parse --abbrev-ref HEAD)
-  tag=$GLABER_BUILD_VERSION-$(date '+%Y-%m-%d-%H-%M')
+  tag=$GLABER_TAG-$(date '+%Y-%m-%d-%H-%M')
   git-reset-variables-files
   git add .
   git commit -m "build auto commit"
