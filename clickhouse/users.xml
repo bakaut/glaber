@@ -4,6 +4,7 @@
     <profiles>
         <!-- Default settings. -->
         <default>
+            <log_queries>0</log_queries>
             <!-- Maximum memory usage for processing single query, in bytes. -->
             <max_memory_usage>10000000000</max_memory_usage>
             <max_query_size>51200000</max_query_size>
