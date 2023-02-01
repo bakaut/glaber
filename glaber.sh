@@ -48,6 +48,7 @@ wait () {
   info "Waiting zabbix to start..."
   apitest && info "Success" && info "$(cat .zbxweb)" || \
   info "Zabbix start failed.Timeout 5 minutes reached" && \
+  docker-compose logs --no-color && \
   info "Please try to open zabbix url with credentials:" && \
   info "$(cat .zbxweb)"  && \
   info "If not success, please run diagnostics ./glaber.sh diag" && \
