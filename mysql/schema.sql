@@ -23,10 +23,13 @@ CREATE TABLE `users` (
 	`attempt_clock`          integer         DEFAULT 0                 NOT NULL,
 	`rows_per_page`          integer         DEFAULT 50                NOT NULL,
 	`timezone`               varchar(50)     DEFAULT 'default'         NOT NULL,
-	`roleid`                 bigint unsigned                           NOT NULL,
+	`roleid`                 bigint unsigned DEFAULT NULL              NULL,
+	`userdirectoryid`        bigint unsigned DEFAULT NULL              NULL,
+	`ts_provisioned`         integer         DEFAULT '0'               NOT NULL,
 	PRIMARY KEY (userid)
 ) ENGINE=InnoDB;
 CREATE UNIQUE INDEX `users_1` ON `users` (`username`);
+CREATE INDEX `users_2` ON `users` (`userdirectoryid`);
 CREATE TABLE `maintenances` (
 	`maintenanceid`          bigint unsigned                           NOT NULL,
 	`name`                   varchar(128)    DEFAULT ''                NOT NULL,
@@ -67,6 +70,7 @@ CREATE TABLE `hosts` (
 	`discover`               integer         DEFAULT '0'               NOT NULL,
 	`custom_interfaces`      integer         DEFAULT '0'               NOT NULL,
 	`uuid`                   varchar(32)     DEFAULT ''                NOT NULL,
+	`name_upper`             varchar(128)    DEFAULT ''                NOT NULL,
 	PRIMARY KEY (hostid)
 ) ENGINE=InnoDB;
 CREATE INDEX `hosts_1` ON `hosts` (`host`);
@@ -74,6 +78,7 @@ CREATE INDEX `hosts_2` ON `hosts` (`status`);
 CREATE INDEX `hosts_3` ON `hosts` (`proxy_hostid`);
 CREATE INDEX `hosts_4` ON `hosts` (`name`);
 CREATE INDEX `hosts_5` ON `hosts` (`maintenanceid`);
+CREATE INDEX `hosts_6` ON `hosts` (`name_upper`);
 CREATE TABLE `hstgrp` (
 	`groupid`                bigint unsigned                           NOT NULL,
 	`name`                   varchar(255)    DEFAULT ''                NOT NULL,
@@ -250,6 +255,7 @@ CREATE TABLE `items` (
 	`allow_traps`            integer         DEFAULT '0'               NOT NULL,
 	`discover`               integer         DEFAULT '0'               NOT NULL,
 	`uuid`                   varchar(32)     DEFAULT ''                NOT NULL,
+	`name_upper`             varchar(255)    DEFAULT ''                NOT NULL,
 	PRIMARY KEY (itemid)
 ) ENGINE=InnoDB;
 CREATE INDEX `items_1` ON `items` (`hostid`,`key_`(764));
@@ -259,6 +265,7 @@ CREATE INDEX `items_5` ON `items` (`valuemapid`);
 CREATE INDEX `items_6` ON `items` (`interfaceid`);
 CREATE INDEX `items_7` ON `items` (`master_itemid`);
 CREATE INDEX `items_8` ON `items` (`key_`(768));
+CREATE INDEX `items_9` ON `items` (`hostid`,`name_upper`);
 CREATE TABLE `httpstepitem` (
 	`httpstepitemid`         bigint unsigned                           NOT NULL,
 	`httpstepid`             bigint unsigned                           NOT NULL,
@@ -392,6 +399,7 @@ CREATE TABLE `actions` (
 	`formula`                varchar(1024)   DEFAULT ''                NOT NULL,
 	`pause_suppressed`       integer         DEFAULT '1'               NOT NULL,
 	`notify_if_canceled`     integer         DEFAULT '1'               NOT NULL,
+	`pause_symptoms`         integer         DEFAULT '1'               NOT NULL,
 	PRIMARY KEY (actionid)
 ) ENGINE=InnoDB;
 CREATE INDEX `actions_1` ON `actions` (`eventsource`,`status`);
@@ -546,7 +554,7 @@ CREATE TABLE `config` (
 	`http_login_form`        integer         DEFAULT '0'               NOT NULL,
 	`http_strip_domains`     varchar(2048)   DEFAULT ''                NOT NULL,
 	`http_case_sensitive`    integer         DEFAULT '1'               NOT NULL,
-	`ldap_configured`        integer         DEFAULT '0'               NOT NULL,
+	`ldap_auth_enabled`      integer         DEFAULT '0'               NOT NULL,
 	`ldap_case_sensitive`    integer         DEFAULT '1'               NOT NULL,
 	`db_extension`           varchar(32)     DEFAULT ''                NOT NULL,
 	`autoreg_tls_accept`     integer         DEFAULT '1'               NOT NULL,
@@ -554,19 +562,6 @@ CREATE TABLE `config` (
 	`compress_older`         varchar(32)     DEFAULT '7d'              NOT NULL,
 	`instanceid`             varchar(32)     DEFAULT ''                NOT NULL,
 	`saml_auth_enabled`      integer         DEFAULT '0'               NOT NULL,
-	`saml_idp_entityid`      varchar(1024)   DEFAULT ''                NOT NULL,
-	`saml_sso_url`           varchar(2048)   DEFAULT ''                NOT NULL,
-	`saml_slo_url`           varchar(2048)   DEFAULT ''                NOT NULL,
-	`saml_username_attribute` varchar(128)    DEFAULT ''                NOT NULL,
-	`saml_sp_entityid`       varchar(1024)   DEFAULT ''                NOT NULL,
-	`saml_nameid_format`     varchar(2048)   DEFAULT ''                NOT NULL,
-	`saml_sign_messages`     integer         DEFAULT '0'               NOT NULL,
-	`saml_sign_assertions`   integer         DEFAULT '0'               NOT NULL,
-	`saml_sign_authn_requests` integer         DEFAULT '0'               NOT NULL,
-	`saml_sign_logout_requests` integer         DEFAULT '0'               NOT NULL,
-	`saml_sign_logout_responses` integer         DEFAULT '0'               NOT NULL,
-	`saml_encrypt_nameid`    integer         DEFAULT '0'               NOT NULL,
-	`saml_encrypt_assertions` integer         DEFAULT '0'               NOT NULL,
 	`saml_case_sensitive`    integer         DEFAULT '0'               NOT NULL,
 	`default_lang`           varchar(5)      DEFAULT 'en_US'           NOT NULL,
 	`default_timezone`       varchar(50)     DEFAULT 'system'          NOT NULL,
@@ -603,11 +598,16 @@ CREATE TABLE `config` (
 	`vault_provider`         integer         DEFAULT '0'               NOT NULL,
 	`ldap_userdirectoryid`   bigint unsigned DEFAULT NULL              NULL,
 	`server_status`          text                                      NOT NULL,
+	`jit_provision_interval` varchar(32)     DEFAULT '1h'              NOT NULL,
+	`saml_jit_status`        integer         DEFAULT '0'               NOT NULL,
+	`ldap_jit_status`        integer         DEFAULT '0'               NOT NULL,
+	`disabled_usrgrpid`      bigint unsigned DEFAULT NULL              NULL,
 	PRIMARY KEY (configid)
 ) ENGINE=InnoDB;
 CREATE INDEX `config_1` ON `config` (`alert_usrgrpid`);
 CREATE INDEX `config_2` ON `config` (`discovery_groupid`);
 CREATE INDEX `config_3` ON `config` (`ldap_userdirectoryid`);
+CREATE INDEX `config_4` ON `config` (`disabled_usrgrpid`);
 CREATE TABLE `triggers` (
 	`triggerid`              bigint unsigned                           NOT NULL,
 	`expression`             varchar(2048)   DEFAULT ''                NOT NULL,
@@ -1117,6 +1117,12 @@ CREATE TABLE `events` (
 ) ENGINE=InnoDB;
 CREATE INDEX `events_1` ON `events` (`source`,`object`,`objectid`,`clock`);
 CREATE INDEX `events_2` ON `events` (`source`,`object`,`clock`);
+CREATE TABLE `event_symptom` (
+	`eventid`                bigint unsigned                           NOT NULL,
+	`cause_eventid`          bigint unsigned                           NOT NULL,
+	PRIMARY KEY (eventid)
+) ENGINE=InnoDB;
+CREATE INDEX `event_symptom_1` ON `event_symptom` (`cause_eventid`);
 CREATE TABLE `trends` (
 	`itemid`                 bigint unsigned                           NOT NULL,
 	`clock`                  integer         DEFAULT '0'               NOT NULL,
@@ -1145,6 +1151,7 @@ CREATE TABLE `acknowledges` (
 	`old_severity`           integer         DEFAULT '0'               NOT NULL,
 	`new_severity`           integer         DEFAULT '0'               NOT NULL,
 	`suppress_until`         integer         DEFAULT '0'               NOT NULL,
+	`taskid`                 bigint unsigned                           NULL,
 	PRIMARY KEY (acknowledgeid)
 ) ENGINE=InnoDB;
 CREATE INDEX `acknowledges_1` ON `acknowledges` (`userid`);
@@ -1457,6 +1464,7 @@ CREATE TABLE `problem` (
 	`name`                   varchar(2048)   DEFAULT ''                NOT NULL,
 	`acknowledged`           integer         DEFAULT '0'               NOT NULL,
 	`severity`               integer         DEFAULT '0'               NOT NULL,
+	`cause_eventid`          bigint unsigned                           NULL,
 	PRIMARY KEY (eventid)
 ) ENGINE=InnoDB;
 CREATE INDEX `problem_1` ON `problem` (`source`,`object`,`objectid`);
@@ -1598,7 +1606,7 @@ CREATE TABLE `task_result` (
 	`taskid`                 bigint unsigned                           NOT NULL,
 	`status`                 integer         DEFAULT '0'               NOT NULL,
 	`parent_taskid`          bigint unsigned                           NOT NULL,
-	`info`                   text                                      NOT NULL,
+	`info`                   longtext                                  NOT NULL,
 	PRIMARY KEY (taskid)
 ) ENGINE=InnoDB;
 CREATE INDEX `task_result_1` ON `task_result` (`parent_taskid`);
@@ -1719,6 +1727,9 @@ CREATE TABLE `widget_field` (
 	`value_sysmapid`         bigint unsigned                           NULL,
 	`value_serviceid`        bigint unsigned                           NULL,
 	`value_slaid`            bigint unsigned                           NULL,
+	`value_userid`           bigint unsigned                           NULL,
+	`value_actionid`         bigint unsigned                           NULL,
+	`value_mediatypeid`      bigint unsigned                           NULL,
 	PRIMARY KEY (widget_fieldid)
 ) ENGINE=InnoDB;
 CREATE INDEX `widget_field_1` ON `widget_field` (`widgetid`);
@@ -1729,6 +1740,9 @@ CREATE INDEX `widget_field_5` ON `widget_field` (`value_graphid`);
 CREATE INDEX `widget_field_6` ON `widget_field` (`value_sysmapid`);
 CREATE INDEX `widget_field_7` ON `widget_field` (`value_serviceid`);
 CREATE INDEX `widget_field_8` ON `widget_field` (`value_slaid`);
+CREATE INDEX `widget_field_9` ON `widget_field` (`value_userid`);
+CREATE INDEX `widget_field_10` ON `widget_field` (`value_actionid`);
+CREATE INDEX `widget_field_11` ON `widget_field` (`value_mediatypeid`);
 CREATE TABLE `task_check_now` (
 	`taskid`                 bigint unsigned                           NOT NULL,
 	`itemid`                 bigint unsigned                           NOT NULL,
@@ -1798,6 +1812,7 @@ CREATE TABLE `interface_snmp` (
 	`authprotocol`           integer         DEFAULT '0'               NOT NULL,
 	`privprotocol`           integer         DEFAULT '0'               NOT NULL,
 	`contextname`            varchar(255)    DEFAULT ''                NOT NULL,
+	`max_repetitions`        integer         DEFAULT '10'              NOT NULL,
 	PRIMARY KEY (interfaceid)
 ) ENGINE=InnoDB;
 CREATE TABLE `lld_override` (
@@ -2094,16 +2109,80 @@ CREATE TABLE `userdirectory` (
 	`userdirectoryid`        bigint unsigned                           NOT NULL,
 	`name`                   varchar(128)    DEFAULT ''                NOT NULL,
 	`description`            text                                      NOT NULL,
+	`idp_type`               integer         DEFAULT '1'               NOT NULL,
+	`provision_status`       integer         DEFAULT '0'               NOT NULL,
+	PRIMARY KEY (userdirectoryid)
+) ENGINE=InnoDB;
+CREATE INDEX `userdirectory_1` ON `userdirectory` (`idp_type`);
+CREATE TABLE `userdirectory_ldap` (
+	`userdirectoryid`        bigint unsigned                           NOT NULL,
 	`host`                   varchar(255)    DEFAULT ''                NOT NULL,
 	`port`                   integer         DEFAULT '389'             NOT NULL,
 	`base_dn`                varchar(255)    DEFAULT ''                NOT NULL,
+	`search_attribute`       varchar(128)    DEFAULT ''                NOT NULL,
 	`bind_dn`                varchar(255)    DEFAULT ''                NOT NULL,
 	`bind_password`          varchar(128)    DEFAULT ''                NOT NULL,
-	`search_attribute`       varchar(128)    DEFAULT ''                NOT NULL,
 	`start_tls`              integer         DEFAULT '0'               NOT NULL,
 	`search_filter`          varchar(255)    DEFAULT ''                NOT NULL,
+	`group_basedn`           varchar(255)    DEFAULT ''                NOT NULL,
+	`group_name`             varchar(255)    DEFAULT ''                NOT NULL,
+	`group_member`           varchar(255)    DEFAULT ''                NOT NULL,
+	`user_ref_attr`          varchar(255)    DEFAULT ''                NOT NULL,
+	`group_filter`           varchar(255)    DEFAULT ''                NOT NULL,
+	`group_membership`       varchar(255)    DEFAULT ''                NOT NULL,
+	`user_username`          varchar(255)    DEFAULT ''                NOT NULL,
+	`user_lastname`          varchar(255)    DEFAULT ''                NOT NULL,
 	PRIMARY KEY (userdirectoryid)
 ) ENGINE=InnoDB;
+CREATE TABLE `userdirectory_saml` (
+	`userdirectoryid`        bigint unsigned                           NOT NULL,
+	`idp_entityid`           varchar(1024)   DEFAULT ''                NOT NULL,
+	`sso_url`                varchar(2048)   DEFAULT ''                NOT NULL,
+	`slo_url`                varchar(2048)   DEFAULT ''                NOT NULL,
+	`username_attribute`     varchar(128)    DEFAULT ''                NOT NULL,
+	`sp_entityid`            varchar(1024)   DEFAULT ''                NOT NULL,
+	`nameid_format`          varchar(2048)   DEFAULT ''                NOT NULL,
+	`sign_messages`          integer         DEFAULT '0'               NOT NULL,
+	`sign_assertions`        integer         DEFAULT '0'               NOT NULL,
+	`sign_authn_requests`    integer         DEFAULT '0'               NOT NULL,
+	`sign_logout_requests`   integer         DEFAULT '0'               NOT NULL,
+	`sign_logout_responses`  integer         DEFAULT '0'               NOT NULL,
+	`encrypt_nameid`         integer         DEFAULT '0'               NOT NULL,
+	`encrypt_assertions`     integer         DEFAULT '0'               NOT NULL,
+	`group_name`             varchar(255)    DEFAULT ''                NOT NULL,
+	`user_username`          varchar(255)    DEFAULT ''                NOT NULL,
+	`user_lastname`          varchar(255)    DEFAULT ''                NOT NULL,
+	`scim_status`            integer         DEFAULT '0'               NOT NULL,
+	PRIMARY KEY (userdirectoryid)
+) ENGINE=InnoDB;
+CREATE TABLE `userdirectory_media` (
+	`userdirectory_mediaid`  bigint unsigned                           NOT NULL,
+	`userdirectoryid`        bigint unsigned                           NOT NULL,
+	`mediatypeid`            bigint unsigned                           NOT NULL,
+	`name`                   varchar(64)     DEFAULT ''                NOT NULL,
+	`attribute`              varchar(255)    DEFAULT ''                NOT NULL,
+	PRIMARY KEY (userdirectory_mediaid)
+) ENGINE=InnoDB;
+CREATE INDEX `userdirectory_media_1` ON `userdirectory_media` (`userdirectoryid`);
+CREATE INDEX `userdirectory_media_2` ON `userdirectory_media` (`mediatypeid`);
+CREATE TABLE `userdirectory_usrgrp` (
+	`userdirectory_usrgrpid` bigint unsigned                           NOT NULL,
+	`userdirectory_idpgroupid` bigint unsigned                           NOT NULL,
+	`usrgrpid`               bigint unsigned                           NOT NULL,
+	PRIMARY KEY (userdirectory_usrgrpid)
+) ENGINE=InnoDB;
+CREATE UNIQUE INDEX `userdirectory_usrgrp_1` ON `userdirectory_usrgrp` (`userdirectory_idpgroupid`,`usrgrpid`);
+CREATE INDEX `userdirectory_usrgrp_2` ON `userdirectory_usrgrp` (`usrgrpid`);
+CREATE INDEX `userdirectory_usrgrp_3` ON `userdirectory_usrgrp` (`userdirectory_idpgroupid`);
+CREATE TABLE `userdirectory_idpgroup` (
+	`userdirectory_idpgroupid` bigint unsigned                           NOT NULL,
+	`userdirectoryid`        bigint unsigned                           NOT NULL,
+	`roleid`                 bigint unsigned                           NOT NULL,
+	`name`                   varchar(255)    DEFAULT ''                NOT NULL,
+	PRIMARY KEY (userdirectory_idpgroupid)
+) ENGINE=InnoDB;
+CREATE INDEX `userdirectory_idpgroup_1` ON `userdirectory_idpgroup` (`userdirectoryid`);
+CREATE INDEX `userdirectory_idpgroup_2` ON `userdirectory_idpgroup` (`roleid`);
 CREATE TABLE `changelog` (
 	`changelogid`            bigint unsigned                           NOT NULL auto_increment,
 	`object`                 integer         DEFAULT '0'               NOT NULL,
@@ -2113,13 +2192,27 @@ CREATE TABLE `changelog` (
 	PRIMARY KEY (changelogid)
 ) ENGINE=InnoDB;
 CREATE INDEX `changelog_1` ON `changelog` (`clock`);
+CREATE TABLE `scim_group` (
+	`scim_groupid`           bigint unsigned                           NOT NULL,
+	`name`                   varchar(64)     DEFAULT ''                NOT NULL,
+	PRIMARY KEY (scim_groupid)
+) ENGINE=InnoDB;
+CREATE UNIQUE INDEX `scim_group_1` ON `scim_group` (`name`);
+CREATE TABLE `user_scim_group` (
+	`user_scim_groupid`      bigint unsigned                           NOT NULL,
+	`userid`                 bigint unsigned                           NOT NULL,
+	`scim_groupid`           bigint unsigned                           NOT NULL,
+	PRIMARY KEY (user_scim_groupid)
+) ENGINE=InnoDB;
+CREATE INDEX `user_scim_group_1` ON `user_scim_group` (`userid`);
+CREATE INDEX `user_scim_group_2` ON `user_scim_group` (`scim_groupid`);
 CREATE TABLE `dbversion` (
 	`dbversionid`            bigint unsigned                           NOT NULL,
 	`mandatory`              integer         DEFAULT '0'               NOT NULL,
 	`optional`               integer         DEFAULT '0'               NOT NULL,
 	PRIMARY KEY (dbversionid)
 ) ENGINE=InnoDB;
-INSERT INTO dbversion VALUES ('1','6030063','6030063');
+INSERT INTO dbversion VALUES ('1','6030159','6030159');
 DELIMITER $$
 create trigger hosts_insert after insert on hosts
 for each row
@@ -2136,6 +2229,18 @@ for each row
 insert into changelog (object,objectid,operation,clock)
 values (1,old.hostid,3,unix_timestamp());
 $$
+create trigger hosts_name_upper_insert
+before insert on hosts for each row
+set new.name_upper=upper(new.name)
+$$
+create trigger hosts_name_upper_update
+before update on hosts for each row
+begin
+if new.name<>old.name
+then
+set new.name_upper=upper(new.name);
+end if;
+end;$$
 create trigger drules_insert after insert on drules
 for each row
 insert into changelog (object,objectid,operation,clock)
@@ -2211,6 +2316,18 @@ for each row
 insert into changelog (object,objectid,operation,clock)
 values (3,old.itemid,3,unix_timestamp());
 $$
+create trigger items_name_upper_insert
+before insert on items for each row
+set new.name_upper=upper(new.name)
+$$
+create trigger items_name_upper_update
+before update on items for each row
+begin
+if new.name<>old.name
+then
+set new.name_upper=upper(new.name);
+end if;
+end;$$
 create trigger httpstepitem_insert after insert on httpstepitem
 for each row
 insert into changelog (object,objectid,operation,clock)
@@ -2363,6 +2480,7 @@ values (4,old.itemtagid,3,unix_timestamp());
 $$
 DELIMITER ;
 ALTER TABLE `users` ADD CONSTRAINT `c_users_1` FOREIGN KEY (`roleid`) REFERENCES `role` (`roleid`) ON DELETE CASCADE;
+ALTER TABLE `users` ADD CONSTRAINT `c_users_2` FOREIGN KEY (`userdirectoryid`) REFERENCES `userdirectory` (`userdirectoryid`);
 ALTER TABLE `hosts` ADD CONSTRAINT `c_hosts_1` FOREIGN KEY (`proxy_hostid`) REFERENCES `hosts` (`hostid`);
 ALTER TABLE `hosts` ADD CONSTRAINT `c_hosts_2` FOREIGN KEY (`maintenanceid`) REFERENCES `maintenances` (`maintenanceid`);
 ALTER TABLE `hosts` ADD CONSTRAINT `c_hosts_3` FOREIGN KEY (`templateid`) REFERENCES `hosts` (`hostid`);
@@ -2417,6 +2535,7 @@ ALTER TABLE `conditions` ADD CONSTRAINT `c_conditions_1` FOREIGN KEY (`actionid`
 ALTER TABLE `config` ADD CONSTRAINT `c_config_1` FOREIGN KEY (`alert_usrgrpid`) REFERENCES `usrgrp` (`usrgrpid`);
 ALTER TABLE `config` ADD CONSTRAINT `c_config_2` FOREIGN KEY (`discovery_groupid`) REFERENCES `hstgrp` (`groupid`);
 ALTER TABLE `config` ADD CONSTRAINT `c_config_3` FOREIGN KEY (`ldap_userdirectoryid`) REFERENCES `userdirectory` (`userdirectoryid`);
+ALTER TABLE `config` ADD CONSTRAINT `c_config_4` FOREIGN KEY (`disabled_usrgrpid`) REFERENCES `usrgrp` (`usrgrpid`);
 ALTER TABLE `triggers` ADD CONSTRAINT `c_triggers_1` FOREIGN KEY (`templateid`) REFERENCES `triggers` (`triggerid`);
 ALTER TABLE `trigger_depends` ADD CONSTRAINT `c_trigger_depends_1` FOREIGN KEY (`triggerid_down`) REFERENCES `triggers` (`triggerid`) ON DELETE CASCADE;
 ALTER TABLE `trigger_depends` ADD CONSTRAINT `c_trigger_depends_2` FOREIGN KEY (`triggerid_up`) REFERENCES `triggers` (`triggerid`) ON DELETE CASCADE;
@@ -2474,6 +2593,8 @@ ALTER TABLE `alerts` ADD CONSTRAINT `c_alerts_3` FOREIGN KEY (`userid`) REFERENC
 ALTER TABLE `alerts` ADD CONSTRAINT `c_alerts_4` FOREIGN KEY (`mediatypeid`) REFERENCES `media_type` (`mediatypeid`) ON DELETE CASCADE;
 ALTER TABLE `alerts` ADD CONSTRAINT `c_alerts_5` FOREIGN KEY (`p_eventid`) REFERENCES `events` (`eventid`) ON DELETE CASCADE;
 ALTER TABLE `alerts` ADD CONSTRAINT `c_alerts_6` FOREIGN KEY (`acknowledgeid`) REFERENCES `acknowledges` (`acknowledgeid`) ON DELETE CASCADE;
+ALTER TABLE `event_symptom` ADD CONSTRAINT `c_event_symptom_1` FOREIGN KEY (`eventid`) REFERENCES `events` (`eventid`) ON DELETE CASCADE;
+ALTER TABLE `event_symptom` ADD CONSTRAINT `c_event_symptom_2` FOREIGN KEY (`cause_eventid`) REFERENCES `events` (`eventid`);
 ALTER TABLE `acknowledges` ADD CONSTRAINT `c_acknowledges_1` FOREIGN KEY (`userid`) REFERENCES `users` (`userid`) ON DELETE CASCADE;
 ALTER TABLE `acknowledges` ADD CONSTRAINT `c_acknowledges_2` FOREIGN KEY (`eventid`) REFERENCES `events` (`eventid`) ON DELETE CASCADE;
 ALTER TABLE `service_alarms` ADD CONSTRAINT `c_service_alarms_1` FOREIGN KEY (`serviceid`) REFERENCES `services` (`serviceid`) ON DELETE CASCADE;
@@ -2502,6 +2623,7 @@ ALTER TABLE `trigger_tag` ADD CONSTRAINT `c_trigger_tag_1` FOREIGN KEY (`trigger
 ALTER TABLE `event_tag` ADD CONSTRAINT `c_event_tag_1` FOREIGN KEY (`eventid`) REFERENCES `events` (`eventid`) ON DELETE CASCADE;
 ALTER TABLE `problem` ADD CONSTRAINT `c_problem_1` FOREIGN KEY (`eventid`) REFERENCES `events` (`eventid`) ON DELETE CASCADE;
 ALTER TABLE `problem` ADD CONSTRAINT `c_problem_2` FOREIGN KEY (`r_eventid`) REFERENCES `events` (`eventid`) ON DELETE CASCADE;
+ALTER TABLE `problem` ADD CONSTRAINT `c_problem_3` FOREIGN KEY (`cause_eventid`) REFERENCES `events` (`eventid`);
 ALTER TABLE `problem_tag` ADD CONSTRAINT `c_problem_tag_1` FOREIGN KEY (`eventid`) REFERENCES `problem` (`eventid`) ON DELETE CASCADE;
 ALTER TABLE `tag_filter` ADD CONSTRAINT `c_tag_filter_1` FOREIGN KEY (`usrgrpid`) REFERENCES `usrgrp` (`usrgrpid`) ON DELETE CASCADE;
 ALTER TABLE `tag_filter` ADD CONSTRAINT `c_tag_filter_2` FOREIGN KEY (`groupid`) REFERENCES `hstgrp` (`groupid`) ON DELETE CASCADE;
@@ -2544,6 +2666,9 @@ ALTER TABLE `widget_field` ADD CONSTRAINT `c_widget_field_5` FOREIGN KEY (`value
 ALTER TABLE `widget_field` ADD CONSTRAINT `c_widget_field_6` FOREIGN KEY (`value_sysmapid`) REFERENCES `sysmaps` (`sysmapid`) ON DELETE CASCADE;
 ALTER TABLE `widget_field` ADD CONSTRAINT `c_widget_field_7` FOREIGN KEY (`value_serviceid`) REFERENCES `services` (`serviceid`) ON DELETE CASCADE;
 ALTER TABLE `widget_field` ADD CONSTRAINT `c_widget_field_8` FOREIGN KEY (`value_slaid`) REFERENCES `sla` (`slaid`) ON DELETE CASCADE;
+ALTER TABLE `widget_field` ADD CONSTRAINT `c_widget_field_9` FOREIGN KEY (`value_userid`) REFERENCES `users` (`userid`) ON DELETE CASCADE;
+ALTER TABLE `widget_field` ADD CONSTRAINT `c_widget_field_10` FOREIGN KEY (`value_actionid`) REFERENCES `actions` (`actionid`) ON DELETE CASCADE;
+ALTER TABLE `widget_field` ADD CONSTRAINT `c_widget_field_11` FOREIGN KEY (`value_mediatypeid`) REFERENCES `media_type` (`mediatypeid`) ON DELETE CASCADE;
 ALTER TABLE `task_check_now` ADD CONSTRAINT `c_task_check_now_1` FOREIGN KEY (`taskid`) REFERENCES `task` (`taskid`) ON DELETE CASCADE;
 ALTER TABLE `event_suppress` ADD CONSTRAINT `c_event_suppress_1` FOREIGN KEY (`eventid`) REFERENCES `events` (`eventid`) ON DELETE CASCADE;
 ALTER TABLE `event_suppress` ADD CONSTRAINT `c_event_suppress_2` FOREIGN KEY (`maintenanceid`) REFERENCES `maintenances` (`maintenanceid`) ON DELETE CASCADE;
@@ -2592,3 +2717,13 @@ ALTER TABLE `sla_schedule` ADD CONSTRAINT `c_sla_schedule_1` FOREIGN KEY (`slaid
 ALTER TABLE `sla_excluded_downtime` ADD CONSTRAINT `c_sla_excluded_downtime_1` FOREIGN KEY (`slaid`) REFERENCES `sla` (`slaid`) ON DELETE CASCADE;
 ALTER TABLE `sla_service_tag` ADD CONSTRAINT `c_sla_service_tag_1` FOREIGN KEY (`slaid`) REFERENCES `sla` (`slaid`) ON DELETE CASCADE;
 ALTER TABLE `host_rtdata` ADD CONSTRAINT `c_host_rtdata_1` FOREIGN KEY (`hostid`) REFERENCES `hosts` (`hostid`) ON DELETE CASCADE;
+ALTER TABLE `userdirectory_ldap` ADD CONSTRAINT `c_userdirectory_ldap_1` FOREIGN KEY (`userdirectoryid`) REFERENCES `userdirectory` (`userdirectoryid`) ON DELETE CASCADE;
+ALTER TABLE `userdirectory_saml` ADD CONSTRAINT `c_userdirectory_saml_1` FOREIGN KEY (`userdirectoryid`) REFERENCES `userdirectory` (`userdirectoryid`) ON DELETE CASCADE;
+ALTER TABLE `userdirectory_media` ADD CONSTRAINT `c_userdirectory_media_1` FOREIGN KEY (`userdirectoryid`) REFERENCES `userdirectory` (`userdirectoryid`) ON DELETE CASCADE;
+ALTER TABLE `userdirectory_media` ADD CONSTRAINT `c_userdirectory_media_2` FOREIGN KEY (`mediatypeid`) REFERENCES `media_type` (`mediatypeid`) ON DELETE CASCADE;
+ALTER TABLE `userdirectory_usrgrp` ADD CONSTRAINT `c_userdirectory_usrgrp_1` FOREIGN KEY (`userdirectory_idpgroupid`) REFERENCES `userdirectory_idpgroup` (`userdirectory_idpgroupid`) ON DELETE CASCADE;
+ALTER TABLE `userdirectory_usrgrp` ADD CONSTRAINT `c_userdirectory_usrgrp_2` FOREIGN KEY (`usrgrpid`) REFERENCES `usrgrp` (`usrgrpid`) ON DELETE CASCADE;
+ALTER TABLE `userdirectory_idpgroup` ADD CONSTRAINT `c_userdirectory_idpgroup_1` FOREIGN KEY (`userdirectoryid`) REFERENCES `userdirectory` (`userdirectoryid`) ON DELETE CASCADE;
+ALTER TABLE `userdirectory_idpgroup` ADD CONSTRAINT `c_userdirectory_idpgroup_2` FOREIGN KEY (`roleid`) REFERENCES `role` (`roleid`) ON DELETE CASCADE;
+ALTER TABLE `user_scim_group` ADD CONSTRAINT `c_user_scim_group_1` FOREIGN KEY (`userid`) REFERENCES `users` (`userid`) ON DELETE CASCADE;
+ALTER TABLE `user_scim_group` ADD CONSTRAINT `c_user_scim_group_2` FOREIGN KEY (`scim_groupid`) REFERENCES `scim_group` (`scim_groupid`) ON DELETE CASCADE;
