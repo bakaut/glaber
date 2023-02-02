@@ -30,6 +30,7 @@ diag () {
   docker-compose -version > .tmp/diag/docker-compose-version.log
   docker --version > .tmp/diag/docker-version.log
   docker info > .tmp/diag/docker-info.log
+  curl http://127.0.1.1:${ZBX_PORT:-80} > .tmp/diag/curl.log
   info "Add diagnostic information to .tmp/diag/diag.zip"
   zip -r .tmp/diag/diag.zip .tmp/diag/ 1>/dev/null
   info "Fill free to create issue https://github.com/bakaut/glaber/issues/new"
@@ -49,6 +50,7 @@ wait () {
   apitest && info "Success" && info "$(cat .zbxweb)" || \
   info "Zabbix start failed.Timeout 5 minutes reached" && \
   docker-compose logs --no-color && \
+  curl http://127.0.1.1:${ZBX_PORT:-80} || true && \
   info "Please try to open zabbix url with credentials:" && \
   info "$(cat .zbxweb)"  && \
   info "If not success, please run diagnostics ./glaber.sh diag" && \
@@ -157,9 +159,9 @@ remote-packer() {
 }
 
 # variables
-export GLABER_TAG=$(cat glaber.version)
+export GLABER_TAG="3.0.7-temp"
 export HURL_VERSION="1.8.0"
-# export ZBX_PORT=8050
+export ZBX_PORT=8050
 
 # main part
 [ $# -ne 1 ] && (usage && exit 1)
