@@ -1,7 +1,7 @@
 name: Create mysql db schema
 on:
   schedule:
-    - cron: '59 * * * *'
+    - cron: '0 */6 * * *'
 jobs:
   build-db-schema:
     runs-on: ubuntu-22.04
