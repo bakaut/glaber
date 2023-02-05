@@ -1,13 +1,12 @@
 name: Create mysql db schema
 on:
-  push:
-    branches:
-    - 'feature/make-upload-database-shema-to-s3'
+  schedule:
+    - cron: '59 * * * *'
 jobs:
   build-db-schema:
     runs-on: ubuntu-22.04
     steps:
-    - name: Install apt packege for build
+    - name: Install apt package for build
       run: |
         sudo apt-get update
         sudo apt-get --ignore-missing install -y sshpass build-essential cmake libgmp3-dev gengetopt libpcap-dev flex byacc libjson-c-dev pkg-config libunistring-dev dpkg-dev devscripts wget git gcc automake dh-make build-essential autoconf autotools-dev quilt pkg-config libsnmp-dev libpq-dev libsqlite3-dev libcurl4-openssl-dev libldap2-dev libiksemel-dev libopenipmi-dev libssh2-1-dev unixodbc-dev default-jdk libxml2-dev libpcre3-dev libevent-dev curl libssl-dev
