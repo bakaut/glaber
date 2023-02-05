@@ -31,4 +31,4 @@ jobs:
         cat images.sql >> create.sql
         cat data.sql >> create.sql
         tar -czvf $GLABER_VERSION-create.sql.tar.gz create.sql
-        mc cp $GLABER_VERSION-mysql-create.sql.tar.gz s3/glaber
+        mc --debug cp $GLABER_VERSION-mysql-create.sql.tar.gz s3/glaber
