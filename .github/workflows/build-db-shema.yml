@@ -28,8 +28,8 @@ jobs:
            ${{ secrets.S3_UPLOAD_PASS }}
         cd database/mysql/
         cat schema.sql > create.sql
-        cat /tmp/images.sql >> create.sql
-        cat /tmp/data.sql >> create.sql
+        cat images.sql >> create.sql
+        cat data.sql >> create.sql
         tar -czvf $GLABER_VERSION-create.sql.tar.gz create.sql
         mc cp $GLABER_VERSION-create.sql.tar.gz s3/mysql/
         mc ls s3/mysql/
