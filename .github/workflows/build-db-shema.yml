@@ -1,0 +1,30 @@
+name: Create mysql db schema
+on:
+  push:
+    branches:
+    - 'feature/make-upload-database-shema-to-s3'
+jobs:
+  docker:
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Install apt packege for build
+      run: |
+        apt-get update
+        apt-get --ignore-missing install -y sshpass build-essential cmake libgmp3-dev gengetopt libpcap-dev flex byacc libjson-c-dev pkg-config libunistring-dev dpkg-dev devscripts wget git gcc automake dh-make build-essential autoconf autotools-dev quilt pkg-config libsnmp-dev libpq-dev libsqlite3-dev libcurl4-openssl-dev libldap2-dev libiksemel-dev libopenipmi-dev libssh2-1-dev unixodbc-dev default-jdk libxml2-dev libpcre3-dev libevent-dev curl libssl-dev
+
+    - name: Build build database schema
+      run: |
+        git clone https://gitlab.com/mikler/glaber.git
+        cd glaber
+        export GLABER_VERSION=`cat include/version.h | grep "GLABER_VERSION" | grep -Po "(\d+\.\d+\.\d+)"`
+        echo "GLABER_VERSION=$GLABER_VERSION" >> $GITHUB_ENV
+        ./bootstrap.sh
+        ./configure
+        make dbschema gettext
+    
+    - name: Upload mysql database schema
+      uses: actions/upload-artifact@v3
+      with:
+        name: create-mysql-$GLABER_VERSION
+        path: glaber/database/mysql/*.sql 
+
