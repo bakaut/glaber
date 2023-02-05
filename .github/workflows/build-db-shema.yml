@@ -26,7 +26,7 @@ jobs:
         mc alias set s3 https://storage.yandexcloud.net \
            ${{ secrets.S3_UPLOAD_USER }} \
            ${{ secrets.S3_UPLOAD_PASS }}
-        cd glaber/database/mysql/
+        cd database/mysql/
         cat schema.sql > create.sql
         cat /tmp/images.sql >> create.sql
         cat /tmp/data.sql >> create.sql
