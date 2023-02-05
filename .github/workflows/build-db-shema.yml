@@ -23,7 +23,7 @@ jobs:
         wget https://dl.min.io/client/mc/release/linux-amd64/mc
         chmod +x mc
         mv mc /usr/local/bin
-        mc alias set glaber https://storage.yandexcloud.net \
+        mc alias set s3 https://storage.yandexcloud.net \
            ${{ secrets.S3_UPLOAD_USER }} \
            ${{ secrets.S3_UPLOAD_PASS }}
         cd database/mysql/
@@ -31,6 +31,4 @@ jobs:
         cat images.sql >> create.sql
         cat data.sql >> create.sql
         tar -czvf $GLABER_VERSION-create.sql.tar.gz create.sql
-        mc cp $GLABER_VERSION-mysql-create.sql.tar.gz glaber:/
-
-
+        mc cp $GLABER_VERSION-mysql-create.sql.tar.gz s3/glaber
