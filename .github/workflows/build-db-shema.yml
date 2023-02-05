@@ -23,7 +23,7 @@ jobs:
         cat schema.sql > create.sql
         cat images.sql >> create.sql
         cat data.sql >> create.sql
-        tar -czvf $GLABER_VERSION-create.sql.tar.gz create.sql
+        tar -czvf $GLABER_VERSION-create-mysql.sql.tar.gz create.sql
         export AWS_ACCESS_KEY_ID=${{ secrets.S3_UPLOAD_USER }}
         export AWS_SECRET_ACCESS_KEY=${{ secrets.S3_UPLOAD_PASS }}
         export AWS_DEFAULT_REGION=ru-central1
