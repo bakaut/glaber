@@ -17,9 +17,9 @@ jobs:
         git clone https://gitlab.com/mikler/glaber.git
         cd glaber
         export GLABER_VERSION=`cat include/version.h | grep "GLABER_VERSION" | grep -Po "(\d+\.\d+\.\d+)"`
-        sudo ./bootstrap.sh
-        sudo ./configure
-        sudo make dbschema gettext
+        ./bootstrap.sh
+        ./configure
+        make dbschema gettext
         wget https://dl.min.io/client/mc/release/linux-amd64/mc
         chmod +x mc
         mv mc /usr/local/bin
