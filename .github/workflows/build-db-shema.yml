@@ -14,21 +14,19 @@ jobs:
 
     - name: Build database schema and upload to s3
       run: |
-        git clone https://gitlab.com/mikler/glaber.git 1>/dev/null
+        git clone https://gitlab.com/mikler/glaber.git
         cd glaber
         export GLABER_VERSION=`cat include/version.h | grep "GLABER_VERSION" | grep -Po "(\d+\.\d+\.\d+)"`
-        ./bootstrap.sh 1>/dev/null
-        ./configure 1>/dev/null
+        ./bootstrap.sh
+        ./configure
         make dbschema gettext
         cd database/mysql/
         cat schema.sql > create.sql
         cat images.sql >> create.sql
         cat data.sql >> create.sql
         tar -czvf $GLABER_VERSION-create.sql.tar.gz create.sql
-        wget https://dl.min.io/client/mc/release/linux-amd64/mc 1>/dev/null
-        chmod +x mc
-        mv mc /usr/local/bin
-        mc alias set s3 https://storage.yandexcloud.net \
-           ${{ secrets.S3_UPLOAD_USER }} \
-           ${{ secrets.S3_UPLOAD_PASS }}
-        mc --debug cp $GLABER_VERSION-mysql-create.sql.tar.gz s3/glaber
+        export AWS_ACCESS_KEY_ID=${{ secrets.S3_UPLOAD_USER }}
+        export AWS_SECRET_ACCESS_KEY=${{ secrets.S3_UPLOAD_PASS }}
+        export AWS_DEFAULT_REGION=ru-central1
+        aws s3 --endpoint-url=https://storage.yandexcloud.net \
+            cp $GLABER_VERSION-create.sql.tar.gz s3://glaber
