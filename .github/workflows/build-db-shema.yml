@@ -28,4 +28,11 @@ jobs:
         export AWS_SECRET_ACCESS_KEY=${{ secrets.S3_UPLOAD_PASS }}
         export AWS_DEFAULT_REGION=ru-central1
         aws s3 --endpoint-url=https://storage.yandexcloud.net \
-            cp $GLABER_VERSION-create.sql.tar.gz s3://glaber
+            cp $GLABER_VERSION-create-mysql.sql.tar.gz s3://glaber
+        cd ../postgresql
+        cat schema.sql > create.sql
+        cat images.sql >> create.sql
+        cat data.sql >> create.sql
+        tar -czvf $GLABER_VERSION-create-postgresql.sql.tar.gz create.sql
+        aws s3 --endpoint-url=https://storage.yandexcloud.net \
+            cp $GLABER_VERSION-create-postgresql.sql.tar.gz s3://glaber
