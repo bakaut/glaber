@@ -12,19 +12,25 @@ jobs:
         sudo apt-get update
         sudo apt-get --ignore-missing install -y sshpass build-essential cmake libgmp3-dev gengetopt libpcap-dev flex byacc libjson-c-dev pkg-config libunistring-dev dpkg-dev devscripts wget git gcc automake dh-make build-essential autoconf autotools-dev quilt pkg-config libsnmp-dev libpq-dev libsqlite3-dev libcurl4-openssl-dev libldap2-dev libiksemel-dev libopenipmi-dev libssh2-1-dev unixodbc-dev default-jdk libxml2-dev libpcre3-dev libevent-dev curl libssl-dev
 
-    - name: Build build database schema
+    - name: Build database schema and upload to s3
       run: |
         git clone https://gitlab.com/mikler/glaber.git
         cd glaber
         export GLABER_VERSION=`cat include/version.h | grep "GLABER_VERSION" | grep -Po "(\d+\.\d+\.\d+)"`
-        echo "GLABER_VERSION=$GLABER_VERSION" >> $GITHUB_ENV
         sudo ./bootstrap.sh
         sudo ./configure
         sudo make dbschema gettext
-    
-    - name: Upload mysql database schema
-      uses: actions/upload-artifact@v3
-      with:
-        name: create-mysql-$GLABER_VERSION
-        path: glaber/database/mysql/*.sql 
+        wget https://dl.min.io/client/mc/release/linux-amd64/mc
+        chmod +x mc
+        mv mc /usr/local/bin
+        mc alias set s3 https://storage.yandexcloud.net \
+           ${{ secrets.S3_UPLOAD_USER }} \
+           ${{ secrets.S3_UPLOAD_PASS }}
+        cd glaber/database/mysql/
+        cat schema.sql > create.sql
+        cat /tmp/images.sql >> create.sql
+        cat /tmp/data.sql >> create.sql
+        tar -czvf $GLABER_VERSION-create.sql.tar.gz create.sql
+        mc cp $GLABER_VERSION-create.sql.tar.gz s3/mysql/
+        mc ls s3/mysql/
 
