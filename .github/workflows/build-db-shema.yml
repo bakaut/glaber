@@ -36,3 +36,10 @@ jobs:
         tar -czvf $GLABER_VERSION-create-postgresql.sql.tar.gz create.sql
         aws s3 --endpoint-url=https://storage.yandexcloud.net \
             cp $GLABER_VERSION-create-postgresql.sql.tar.gz s3://glaber
+        OBJECTS=$(aws s3 --endpoint-url=https://storage.yandexcloud.net \
+            ls s3://glaber | awk '{print $4}')
+        touch  index.html
+        for i in $OBJECTS; do echo '<a href="./'$i'">'$i'</a><br>' >> index.html;done
+        aws s3 --endpoint-url=https://storage.yandexcloud.net \
+            cp index.html s3://glaber
+
