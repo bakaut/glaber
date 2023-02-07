@@ -71,9 +71,11 @@ set-passwords() {
     ZBX_WEB_GUEST_PASS=$(gen-password)
     ZBX_WEB_ADMIN_GUEST_HASH=$(make-bcrypt-hash $ZBX_WEB_GUEST_PASS)
     echo "Zabbix web access http://127.0.1.1:${ZBX_PORT:-80} Admin $ZBX_WEB_ADMIN_PASS" > .zbxweb
-    sed -i -e "6s#admin-pass-hash#$ZBX_WEB_ADMIN_PASS_HASH#" \
-           -e  "7s#guest-pass-hash#$ZBX_WEB_ADMIN_GUEST_HASH#" \
-    mysql/data.sql
+    wget https://storage.yandexcloud.net/glaber/repo/$GLABER_BUILD_VERSION-create-mysql.sql.tar.gz -O - | tar -xz
+    mv create.sql mysql/create.sql
+    sed -i -r -e "#\'Administrator\'\,\'\$2y\$10\$[0-9-a-z-A-Z\/\.]+#\'Administrator\'\,\'\$2y\$10\$$ZBX_WEB_ADMIN_PASS_HASH#" \
+              -e "#\''\,\'\$2y\$10\$[0-9-a-z-A-Z\/\.]+#\''\,\'\$2y\$10\$$ZBX_WEB_ADMIN_GUEST_HASH#" \
+    mysql/create.sql
     source .env
     sed -i -e "s/<password>.*<\/password>/<password>$ZBX_CH_PASS<\/password>/" \
            -e "s/10000000000/$ZBX_CH_CONFIG_MAX_MEMORY_USAGE/" \
@@ -155,7 +157,7 @@ remote-packer() {
 }
 
 # variables
-export GLABER_BUILD_VERSION=$(cat glaber.version)
+export GLABER_BUILD_VERSION="2.18.1"
 export args=" --build-arg GLABER_BUILD_VERSION=$GLABER_BUILD_VERSION"
 export HURL_VERSION="1.8.0"
 # export ZBX_PORT=8050

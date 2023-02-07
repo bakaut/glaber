@@ -5,3 +5,5 @@
 mysql_data
 clickhouse_data
 workers_script
+history.sql
+create.sql
