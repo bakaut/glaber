@@ -3,6 +3,8 @@ set -e
 
 if [ ! -f database.exist ]; then
 
+  wget https://gitlab.com/mikler/glaber/-/raw/${GLABER_BRANCH}/database/clickhouse/history.sql -o /root/history.sql
+
   sed -i -e "s/glaber/${ZBX_CH_DB}/g" \
          -e "s/6 MONTH/${ZBX_CH_RETENTION}/g" \
          /root/history.sql
