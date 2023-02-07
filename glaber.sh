@@ -36,7 +36,6 @@ diag () {
   info "And attach .tmp/diag/diag.zip to it"
 }
 git-reset-variables-files () {
-  git checkout HEAD -- mysql/data.sql
   git checkout HEAD -- clickhouse/users.xml
   git checkout HEAD -- .env
 }
