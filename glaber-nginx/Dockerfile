@@ -9,9 +9,9 @@ RUN apt-get update && \
             nmap gnupg2 openssl ca-certificates \
             supervisor default-mysql-client \
             lsb-release apt-transport-https locales && \
-    wget -qO - https://glaber.io/repo-testing/key/repo.gpg | apt-key add - && \
+    wget -qO - https://glaber.io/repo/key/repo.gpg | apt-key add - && \
     wget -qO - https://nginx.org/keys/nginx_signing.key | apt-key add - && \
-    echo "deb [arch=amd64] https://glaber.io/repo-testing/debian $(lsb_release -sc) main" >> /etc/apt/sources.list.d/glaber.list && \
+    echo "deb [arch=amd64] https://glaber.io/repo/debian $(lsb_release -sc) main" >> /etc/apt/sources.list.d/glaber.list && \
     apt-get update && \
     apt-cache show glaber-nginx-conf && \
     apt-get install -y glaber-nginx-conf=1:$GLABER_BUILD_VERSION* && \
