@@ -30,6 +30,8 @@ jobs:
         aws s3 --endpoint-url=https://storage.yandexcloud.net \
             cp $GLABER_VERSION-create-mysql.sql.tar.gz s3://glaber/repo/
         touch  index.html
+        OBJECTS=$(aws s3 --endpoint-url=https://storage.yandexcloud.net \
+            ls s3://glaber/repo/ | awk '{print $4}')
         for i in $OBJECTS; do echo '<a href="./repo/'$i'">'$i'</a><br>' >> index.html;done
         aws s3 --endpoint-url=https://storage.yandexcloud.net \
             cp index.html s3://glaber
