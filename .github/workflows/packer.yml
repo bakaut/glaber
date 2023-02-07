@@ -13,7 +13,7 @@ jobs:
 
       - name: Prepare variables
         run: |
-          GLABER_BUILD_VERSION=$(cat glaber.version)
+          GLABER_BUILD_VERSION="2.18.1"
           echo "GLABER_BUILD_VERSION=$GLABER_BUILD_VERSION" >> $GITHUB_ENV
           echo "TMG_TAG=$GLABER_BUILD_VERSION-pkr-temp" >> $GITHUB_ENV
           echo "REGISTRY=ghcr.io" >> $GITHUB_ENV
