@@ -22,7 +22,7 @@ build {
       "wget -qO - https://glaber.io/repo/key/repo.gpg | apt-key add -",
       "echo \"deb [arch=amd64] https://glaber.io/repo/debian $(lsb_release -sc) main\" >> /etc/apt/sources.list.d/glaber.list",
       "apt-get update",
-      "apt-get install -y glaber-server-mysql=1:${var.glaber_build_version}*",
+      "apt-get install -y glaber-server-mysql=1:${var.GLABER_VERSION}*",
       "rm -rf /var/lib/{apt,dpkg,cache,log}/",
       "apt-get autoremove --yes",
       "apt-get clean autoclean",
