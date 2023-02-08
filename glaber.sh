@@ -36,9 +36,9 @@ diag () {
   info "And attach .tmp/diag/diag.zip to it"
 }
 git-reset-variables-files () {
-  git checkout HEAD -- mysql/data.sql
   git checkout HEAD -- clickhouse/users.xml
   git checkout HEAD -- .env
+  git checkout HEAD -- mysql/update.sql
 }
 info () {
   local message=$1
@@ -46,37 +46,35 @@ info () {
 }
 wait () {
   info "Waiting zabbix to start..."
-  apitest && info "Success" && info "$(cat .zbxweb)" || \
-  info "Zabbix start failed.Timeout 5 minutes reached" \
-  info "Please try to open zabbix url with credentials:" \
-  info "$(cat .zbxweb)" \
-  info "If not success, please run diagnostics ./glaber.sh diag"
+  apitest && info "Success" && info "$(cat .zbxweb)" && exit 0 || \
+  docker-compose logs --no-color && \
+  curl http://127.0.1.1:${ZBX_PORT:-80} || true && \
+  info "Please try to open zabbix url with credentials:" && \
+  info "$(cat .zbxweb)"  && \
+  info "If not success, please run diagnostics ./glaber.sh diag" && \
+  info "Zabbix start failed.Timeout 5 minutes reached" && \
+  exit 1
 }
 set-passwords() {
   gen-password() {
     < /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c12
   }
-  make-bcrypt-hash() {
-    htpasswd -bnBC 8 "" $1 | tail -c 55
-  }
   if [ ! -f .passwords.created ]; then
     git-reset-variables-files
+    source .env
     ZBX_CH_PASS=$(gen-password)
+    ZBX_WEB_ADMIN_PASS=$(gen-password)
     sed -i -e "s/MYSQL_PASSWORD=.*/MYSQL_PASSWORD=$(gen-password)/" \
            -e "s/ZBX_CH_PASS=.*/ZBX_CH_PASS=$ZBX_CH_PASS/" \
            -e "s/MYSQL_ROOT_PASSWORD=.*/MYSQL_ROOT_PASSWORD=$(gen-password)/" \
-    .env
-    ZBX_WEB_ADMIN_PASS=$(gen-password)
-    ZBX_WEB_ADMIN_PASS_HASH=$(make-bcrypt-hash $ZBX_WEB_ADMIN_PASS)
-    ZBX_WEB_GUEST_PASS=$(gen-password)
-    ZBX_WEB_ADMIN_GUEST_HASH=$(make-bcrypt-hash $ZBX_WEB_GUEST_PASS)
-    echo "Zabbix web access http://127.0.1.1:${ZBX_PORT:-80} Admin $ZBX_WEB_ADMIN_PASS" > .zbxweb
-    wget https://storage.yandexcloud.net/glaber/repo/$GLABER_BUILD_VERSION-create-mysql.sql.tar.gz -O - | tar -xz
+    .env  
+    [[ ! -f mysql/create.sql ]] && \
+    wget -q https://storage.yandexcloud.net/glaber/repo/$GLABER_VERSION-create-mysql.sql.tar.gz -O - | tar -xz && \
     mv create.sql mysql/create.sql
-    sed -i -r -e "#\'Administrator\'\,\'\$2y\$10\$[0-9-a-z-A-Z\/\.]+#\'Administrator\'\,\'\$2y\$10\$$ZBX_WEB_ADMIN_PASS_HASH#" \
-              -e "#\''\,\'\$2y\$10\$[0-9-a-z-A-Z\/\.]+#\''\,\'\$2y\$10\$$ZBX_WEB_ADMIN_GUEST_HASH#" \
-    mysql/create.sql
-    source .env
+    sed -i -e "s/MYSQL_DATABASE/$MYSQL_DATABASE/" \
+           -e "s/ZBX_WEB_ADMIN_PASS/$ZBX_WEB_ADMIN_PASS/" \
+    mysql/update.sql
+    cat mysql/update.sql >> mysql/create.sql
     sed -i -e "s/<password>.*<\/password>/<password>$ZBX_CH_PASS<\/password>/" \
            -e "s/10000000000/$ZBX_CH_CONFIG_MAX_MEMORY_USAGE/" \
            -e "s/defaultuser/$ZBX_CH_USER/" \
@@ -87,6 +85,7 @@ set-passwords() {
     echo "pass=$ZBX_WEB_ADMIN_PASS" >> .github/workflows/test/.hurl
     echo "port=${ZBX_PORT:-80}" >> .github/workflows/test/.hurl
     touch .passwords.created
+    echo "Zabbix web access http://127.0.1.1:${ZBX_PORT:-80} Admin $ZBX_WEB_ADMIN_PASS" > .zbxweb
   fi
 }
 usage() {
@@ -125,7 +124,7 @@ remove() {
   if [[ $REPLY =~ ^[Yy]$ ]]
   then
     rm .passwords.created .zbxweb .github/workflows/test/.hurl || true
-    sudo rm -rf  mysql/mysql_data/ clickhouse/clickhouse_data
+    sudo rm -rf  mysql/mysql_data/ clickhouse/clickhouse_data mysql/create.sql
     git-reset-variables-files
   fi
 }
@@ -135,7 +134,7 @@ recreate() {
 }
 remote-docker() {
   current_branch=$(git rev-parse --abbrev-ref HEAD)
-  tag=$GLABER_BUILD_VERSION-$(date '+%Y-%m-%d-%H-%M')
+  tag=$GLABER_VERSION-$(date '+%Y-%m-%d-%H-%M')
   git-reset-variables-files
   git add .
   git commit -m "build auto commit"
@@ -146,7 +145,7 @@ remote-docker() {
 }
 remote-packer() {
   current_branch=$(git rev-parse --abbrev-ref HEAD)
-  tag=$GLABER_BUILD_VERSION-$(date '+%Y-%m-%d-%H-%M')
+  tag=$GLABER_VERSION-$(date '+%Y-%m-%d-%H-%M')
   git-reset-variables-files
   git add .
   git commit -m "build auto commit"
@@ -157,8 +156,8 @@ remote-packer() {
 }
 
 # variables
-export GLABER_BUILD_VERSION="2.18.1"
-export args=" --build-arg GLABER_BUILD_VERSION=$GLABER_BUILD_VERSION"
+export GLABER_VERSION=$(cat glaber.version)
+export args=" --build-arg GLABER_VERSION=$GLABER_VERSION"
 export HURL_VERSION="1.8.0"
 # export ZBX_PORT=8050
 

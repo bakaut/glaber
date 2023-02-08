@@ -13,10 +13,10 @@ jobs:
 
     - name: Prepare variables
       run: |
-        GLABER_BUILD_VERSION=$(cat glaber.version)
-        echo "GLABER_BUILD_VERSION=$GLABER_BUILD_VERSION" >> $GITHUB_ENV
-        echo "TMG_TAG=$GLABER_BUILD_VERSION-temp" >> $GITHUB_ENV
-        echo "TAG=$GLABER_BUILD_VERSION" >> $GITHUB_ENV
+        GLABER_VERSION=$(cat glaber.version)
+        echo "GLABER_VERSION=$GLABER_VERSION" >> $GITHUB_ENV
+        echo "TMG_TAG=$GLABER_VERSION-temp" >> $GITHUB_ENV
+        echo "TAG=$GLABER_VERSION" >> $GITHUB_ENV
         echo "DOCKER_BUILDKIT=1" >> $GITHUB_ENV
         echo "REGISTRY=ghcr.io" >> $GITHUB_ENV
 
@@ -34,7 +34,7 @@ jobs:
         BASE_IMAGE="$REGISTRY/$GITHUB_REPOSITORY/$APP_NAME"
         TMP_IMAGE="$BASE_IMAGE:$TMG_TAG"
         cd $APP_NAME
-        docker build . -t $TMP_IMAGE --build-arg GLABER_BUILD_VERSION=$GLABER_BUILD_VERSION
+        docker build . -t $TMP_IMAGE --build-arg GLABER_VERSION=$GLABER_VERSION
         docker push $TMP_IMAGE
 
     - name: Build temp glaber-nginx image
@@ -44,7 +44,7 @@ jobs:
         BASE_IMAGE="$REGISTRY/$GITHUB_REPOSITORY/$APP_NAME"
         TMP_IMAGE="$BASE_IMAGE:$TMG_TAG"
         cd $APP_NAME
-        docker build . -t $TMP_IMAGE --build-arg GLABER_BUILD_VERSION=$GLABER_BUILD_VERSION
+        docker build . -t $TMP_IMAGE --build-arg GLABER_VERSION=$GLABER_VERSION
         docker push $TMP_IMAGE
 
     - name: Test glaber start
@@ -60,12 +60,12 @@ jobs:
         APP_NAME=glaber-server
         BASE_IMAGE="$REGISTRY/$GITHUB_REPOSITORY/$APP_NAME"
         cd $APP_NAME
-        docker build . -t $BASE_IMAGE:$GLABER_BUILD_VERSION \
+        docker build . -t $BASE_IMAGE:$GLABER_VERSION \
                        -t $BASE_IMAGE:latest \
                        --cache-from $BASE_IMAGE:$TMG_TAG \
-                       --build-arg GLABER_BUILD_VERSION=$GLABER_BUILD_VERSION
+                       --build-arg GLABER_VERSION=$GLABER_VERSION
         docker push $BASE_IMAGE:latest
-        docker push $BASE_IMAGE:$GLABER_BUILD_VERSION
+        docker push $BASE_IMAGE:$GLABER_VERSION
         docker rmi -f $BASE_IMAGE:$TMG_TAG
 
     - name: Release glaber-nginx image
@@ -74,10 +74,10 @@ jobs:
         APP_NAME=glaber-nginx
         BASE_IMAGE="$REGISTRY/$GITHUB_REPOSITORY/$APP_NAME"
         cd $APP_NAME
-        docker build . -t $BASE_IMAGE:$GLABER_BUILD_VERSION \
+        docker build . -t $BASE_IMAGE:$GLABER_VERSION \
                        -t $BASE_IMAGE:latest \
                        --cache-from $BASE_IMAGE:$TMG_TAG \
-                       --build-arg GLABER_BUILD_VERSION=$GLABER_BUILD_VERSION
+                       --build-arg GLABER_VERSION=$GLABER_VERSION
         docker push $BASE_IMAGE:latest
-        docker push $BASE_IMAGE:$GLABER_BUILD_VERSION
+        docker push $BASE_IMAGE:$GLABER_VERSION
         docker rmi -f $BASE_IMAGE:$TMG_TAG
