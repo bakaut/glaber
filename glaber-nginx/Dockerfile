@@ -1,5 +1,5 @@
 FROM debian:bullseye
-ARG GLABER_BUILD_VERSION
+ARG GLABER_VERSION
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
@@ -14,7 +14,7 @@ RUN apt-get update && \
     echo "deb [arch=amd64] https://glaber.io/repo/debian $(lsb_release -sc) main" >> /etc/apt/sources.list.d/glaber.list && \
     apt-get update && \
     apt-cache show glaber-nginx-conf && \
-    apt-get install -y glaber-nginx-conf=1:$GLABER_BUILD_VERSION* && \
+    apt-get install -y glaber-nginx-conf=1:$GLABER_VERSION* && \
     rm -rf /var/lib/{apt,dpkg,cache,log}/ && \
     apt-get autoremove --yes && \
     apt-get clean autoclean && \
