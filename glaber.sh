@@ -71,10 +71,11 @@ set-passwords() {
     [[ ! -f mysql/create.sql ]] && \
     wget -q https://storage.yandexcloud.net/glaber/repo/$GLABER_VERSION-create-mysql.sql.tar.gz -O - | tar -xz && \
     mv create.sql mysql/create.sql
+    echo "use MYSQL_DATABASE;" >> mysql/create.sql
+    echo "update users set passwd=md5('ZBX_WEB_ADMIN_PASS') where username='Admin';" >> mysql/create.sql
     sed -i -e "s/MYSQL_DATABASE/$MYSQL_DATABASE/" \
            -e "s/ZBX_WEB_ADMIN_PASS/$ZBX_WEB_ADMIN_PASS/" \
-    mysql/update.sql
-    cat mysql/update.sql >> mysql/create.sql
+    mysql/create.sql
     sed -i -e "s/<password>.*<\/password>/<password>$ZBX_CH_PASS<\/password>/" \
            -e "s/10000000000/$ZBX_CH_CONFIG_MAX_MEMORY_USAGE/" \
            -e "s/defaultuser/$ZBX_CH_USER/" \
