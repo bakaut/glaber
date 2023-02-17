@@ -11,7 +11,7 @@ jobs:
         cd glaber
         GLABER_TAG=$(git describe --tags $(git rev-list --tags --max-count=1))
         git checkout tags/$GLABER_TAG
-        SEMVER_CHANGED=$(git log --since='2500 hour ago' -n1 -- include/version.h)
+        SEMVER_CHANGED=$(git log --since='25 hour ago' -n1 -- include/version.h)
         if [ ! -z "$SEMVER_CHANGED" ]
         then
           sudo apt-get update
