@@ -38,7 +38,6 @@ diag () {
 git-reset-variables-files () {
   git checkout HEAD -- clickhouse/users.xml
   git checkout HEAD -- .env
-  git checkout HEAD -- mysql/update.sql
 }
 info () {
   local message=$1
