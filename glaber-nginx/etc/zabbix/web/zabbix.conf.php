@@ -18,17 +18,8 @@ $ZBX_SERVER_NAME = '{ZBX_SERVER_NAME}';
 
 $IMAGE_FORMAT_DEFAULT	= IMAGE_FORMAT_PNG;
 
-// Clickhouse url (can be string if same url is used for all types).
+//should be so, will deprecate soon
 
-$HISTORY['storagetype']='{ZBX_HISTORY_MODULE}';
-$HISTORY['url']   = '{ZBX_CH_URL}';
-$HISTORY['types'] = ['uint', 'dbl','str','text'];
-$HISTORY['dbname'] = '{ZBX_CH_DB}';
-$HISTORY['username'] = '{ZBX_CH_USER}';
-$HISTORY['password'] = '{ZBX_CH_PASS}';
+$HISTORY['storagetype']='server';
 
-
-
-
-
-
+?>
