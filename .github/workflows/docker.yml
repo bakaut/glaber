@@ -3,6 +3,8 @@ on:
   push:
     branches:
     - 'build/**'
+  schedule:
+    - cron: '0 3 * * *'
 jobs:
   docker:
     runs-on: ubuntu-22.04
@@ -13,7 +15,11 @@ jobs:
 
     - name: Prepare variables
       run: |
-        GLABER_VERSION=$(cat glaber.version)
+        GLABER_TAG=$(git ls-remote --refs --sort='version:refname' --tags \
+                    https://gitlab.com/mikler/glaber.git origin '2.*' | \
+                    tail --lines=1 | cut --delimiter='/' --fields=3)
+        GLABER_VERSION=$(curl -s https://gitlab.com/mikler/glaber/-/raw/${GLABER_TAG}/include/version.h | \
+                         grep GLABER_VERSION | tr -dc 0-9.)
         echo "GLABER_VERSION=$GLABER_VERSION" >> $GITHUB_ENV
         echo "TMG_TAG=$GLABER_VERSION-temp" >> $GITHUB_ENV
         echo "TAG=$GLABER_VERSION" >> $GITHUB_ENV
