@@ -20,6 +20,7 @@ jobs:
                     tail --lines=1 | cut --delimiter='/' --fields=3)
         GLABER_VERSION=$(curl -s https://gitlab.com/mikler/glaber/-/raw/${GLABER_TAG}/include/version.h | \
                          grep GLABER_VERSION | tr -dc 0-9.)
+        docker pull ghcr.io/bakaut/glaber/glaber-server:$GLABER_VERSION && exit 0
         echo "GLABER_VERSION=$GLABER_VERSION" >> $GITHUB_ENV
         echo "TMG_TAG=$GLABER_VERSION-temp" >> $GITHUB_ENV
         echo "TAG=$GLABER_VERSION" >> $GITHUB_ENV
