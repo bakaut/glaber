@@ -35,6 +35,7 @@ jobs:
           version: "1.8.5"
 
       - name: Run `packer init`
+        if: ${{ env.IMAGE != 'exist' }}
         id: init
         run: |
           export PACKER_GITHUB_API_TOKEN=${{ secrets.PACKER_TOKEN }}
@@ -42,6 +43,7 @@ jobs:
           packer init .
 
       - name: Run `packer validate`
+        if: ${{ env.IMAGE != 'exist' }}
         id: validate
         run: |
           cd .github/workflows/build/docker
@@ -57,12 +59,14 @@ jobs:
                  -warn-on-undeclared-var .
 
       - name: Testing glaber server start
+        if: ${{ env.IMAGE != 'exist' }}
         id: test
         run: |
           export GLABER_VERSION=$TMG_TAG
           ./glaber.sh start
 
       - name: Run `packer release`
+        if: ${{ env.IMAGE != 'exist' }}
         id: release
         run: |
           export DOCKER_PASSWORD=${{ secrets.GITHUB_TOKEN }}

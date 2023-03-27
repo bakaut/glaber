@@ -37,6 +37,7 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Build temp glaber-server image
+      if: ${{ env.IMAGE != 'exist' }}
       id: glaber-server
       run: |
         APP_NAME=glaber-server
@@ -47,6 +48,7 @@ jobs:
         docker push $TMP_IMAGE
 
     - name: Build temp glaber-nginx image
+      if: ${{ env.IMAGE != 'exist' }}
       id: glaber-nginx
       run: |
         APP_NAME=glaber-nginx
@@ -62,6 +64,7 @@ jobs:
         ./glaber.sh start
 
     - name: Release glaber-server image
+      if: ${{ env.IMAGE != 'exist' }}
       id: glaber-server-release
       run: |
         APP_NAME=glaber-server
@@ -76,6 +79,7 @@ jobs:
         docker rmi -f $BASE_IMAGE:$TMG_TAG
 
     - name: Release glaber-nginx image
+      if: ${{ env.IMAGE != 'exist' }}
       id: glaber-nginx-release
       run: |
         APP_NAME=glaber-nginx
