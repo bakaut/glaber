@@ -1,7 +1,7 @@
 name: Create db schemas
 on:
   schedule:
-    - cron: '59 * * * *'
+    - cron: '0 */4 * * *'
 
 jobs:
   build-db-schema:
@@ -9,9 +9,9 @@ jobs:
     steps:
     - name: Build database schemas of last stable glaber version and upload to s3
       run: |
-        git clone https://gitlab.com/mikler/glaber.git
+        git clone --depth 1 -b master https://gitlab.com/mikler/glaber.git
         cd glaber
-        SEMVER_CHANGED=$(git log --since='1 hour ago' -n1 -- include/version.h)
+        SEMVER_CHANGED=$(git log --since='5 hour ago' -n1 -- include/version.h)
         if [ ! -z "$SEMVER_CHANGED" ]
         then
           sudo apt-get update
