@@ -50,6 +50,7 @@ jobs:
           packer validate .
 
       - name: Run `packer build`
+        if: ${{ env.IMAGE != 'exist' }}
         id: build
         run: |
           export DOCKER_PASSWORD=${{ secrets.GITHUB_TOKEN }}

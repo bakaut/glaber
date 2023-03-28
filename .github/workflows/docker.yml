@@ -59,6 +59,7 @@ jobs:
         docker push $TMP_IMAGE
 
     - name: Test glaber start
+      if: ${{ env.IMAGE != 'exist' }}
       run: |
         export GLABER_VERSION=$TMG_TAG
         ./glaber.sh start
