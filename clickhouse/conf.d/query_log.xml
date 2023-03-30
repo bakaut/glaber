@@ -3,12 +3,12 @@
     <database>system</database>
 
     <table>query_log</table>
-        <flush_interval_milliseconds>60000</flush_interval_milliseconds>
+        <flush_interval_milliseconds>30000</flush_interval_milliseconds>
         <engine>
           ENGINE = MergeTree
           PARTITION BY event_date
           ORDER BY (event_time)
-          TTL event_date + interval 1 day
+          TTL event_date + interval 3 hour
           SETTINGS ttl_only_drop_parts=1
         </engine>
     </query_log>

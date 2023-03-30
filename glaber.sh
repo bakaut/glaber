@@ -63,6 +63,7 @@ set-passwords() {
   }
   if [ ! -f .passwords.created ]; then
     git-reset-variables-files
+    echo "GLABER_TAG=$GLABER_TAG" >> .env
     source .env
     ZBX_CH_PASS=$(gen-password)
     ZBX_WEB_ADMIN_PASS=$(gen-password)
@@ -163,7 +164,7 @@ remote-packer() {
 HURL_VERSION="1.8.0"
 # export ZBX_PORT=8050
 # Getting latest tag on git repository (latest stable 2 version of glaber)
-GLABER_TAG=$(git ls-remote --refs --sort='version:refname' --tags \
+export GLABER_TAG=$(git ls-remote --refs --sort='version:refname' --tags \
              https://gitlab.com/mikler/glaber.git origin '2.*' | \
              tail --lines=1 | cut --delimiter='/' --fields=3)
 export GLABER_VERSION=$(curl -s https://gitlab.com/mikler/glaber/-/raw/${GLABER_TAG}/include/version.h | \
